@@ -5,7 +5,7 @@
 
 #define		PREFIX			"\x01★ \x04[Gloves]\x01"
 //#define	LICENSE			"ip"
-#define		VIP_ONLY
+//#define	VIP_ONLY
 
 #if defined	VIP_ONLY
 #define		VIP_FLAG		Admin_Custom6
