@@ -35,7 +35,7 @@ public Plugin:myinfo =
 	name = "SM Valve Gloves",
 	author = "Franc1sco franug and hadesownage",
 	description = "",
-	version = "1.0.1",
+	version = "1.0.2",
 	url = "https://forums.alliedmods.net/showthread.php?t=291029"
 };
 
@@ -734,20 +734,14 @@ public Sport_Handler(Handle menu, MenuAction action, int param1, int param2)
 	}
 }
 
-stock bool ChangePlayerWeaponSlot( int iClient, int iSlot) {
-	int iWeapon = GetPlayerWeaponSlot(iClient, iSlot);
-	if (iWeapon > MaxClients) {
-		SetEntPropEnt(iClient, Prop_Send, "m_hActiveWeapon", iWeapon);
-		//FakeClientCommand(iClient, "use weapon_knife");
-		return true;
-	}
-
-	return false;
-}
-
 stock void SetUserGloves ( client, glove, bool save ) {
 	
-	if ( IsValidClient ( client ) ) {
+	if ( IsValidClient ( client )) {
+		
+		if(!IsPlayerAlive(client) || !IsFakeClient(client))
+		{
+			return;
+		}
 		
 		if (glove < 1)return;
 		RemoveEntityGloves(client);
