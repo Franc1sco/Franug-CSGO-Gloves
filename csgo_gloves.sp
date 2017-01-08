@@ -4,6 +4,12 @@
 #include <clientprefs>
 
 #define		PREFIX			"\x01★ \x04[Gloves]\x01"
+//#define	LICENSE			"ip"
+#define		VIP_ONLY
+
+#if defined	VIP_ONLY
+#define		VIP_FLAG		Admin_Custom6
+#endif
 
 #define 	BLOODHOUND 		5027
 #define		BLOODHOUND_MODEL	"models/weapons/v_models/arms/glove_bloodhound/v_glove_bloodhound.mdl"
@@ -30,6 +36,10 @@ int g_iGlove [ MAXPLAYERS + 1 ];
 int g_iGlovesEntity[MAXPLAYERS + 1];
 //Handle htimer[MAXPLAYERS + 1];
 
+#if defined LICENSE
+char g_Address [ PLATFORM_MAX_PATH ];
+#endif
+
 public Plugin:myinfo =
 {
 	name = "SM Valve Gloves",
@@ -41,16 +51,16 @@ public Plugin:myinfo =
 
 public void OnPluginStart() {
     	
-	RegConsoleCmd("sm_glove", CommandGloves );
-	RegConsoleCmd("sm_gloves", CommandGloves );
+	RegConsoleCmd ( "sm_glove", CommandGloves );
+	RegConsoleCmd ( "sm_gloves", CommandGloves );
     	
-	RegConsoleCmd("sm_arm", CommandGloves );
-	RegConsoleCmd("sm_arms", CommandGloves );
+	RegConsoleCmd ( "sm_arm", CommandGloves );
+	RegConsoleCmd ( "sm_arms", CommandGloves );
     	
-	RegConsoleCmd("sm_manusa", CommandGloves );
-	RegConsoleCmd("sm_manusi", CommandGloves );
+	RegConsoleCmd ( "sm_manusa", CommandGloves );
+	RegConsoleCmd ( "sm_manusi", CommandGloves );
     	
-	RegConsoleCmd("sm_setarms", CommandSetArms );
+	RegConsoleCmd ( "sm_setarms", CommandSetArms );
     
 	HookEvent ( "player_spawn", hookPlayerSpawn );
 	HookEvent ( "player_death", hookPlayerDeath );
@@ -59,14 +69,35 @@ public void OnPluginStart() {
     	
 	for(new client = 1; client <= MaxClients; client++)
 	{
-		if(IsClientInGame(client))
+		if(IsValidClient(client))
 		{
 			OnClientCookiesCached(client);
 		}
 	}
+	
+	#if defined LICENSE
+	GetServerAddress(g_Address, sizeof(g_Address));
+	#endif
 }
 
+#if defined LICENSE
+public void OnMapStart ( ) {
+	
+	if ( !StrEqual( g_Address, LICENSE, false ) )
+		SetFailState("Invalid License.");
+		
+}
+#endif
+
 public Action CommandSetArms ( int client, int args ) {
+	
+	#if defined VIP_ONLY
+	if ( !IsValidClient ( client ) || !g_iGlove [ client ] || !IsUserVip ( client ) )
+		return Plugin_Handled;
+	#else
+	if ( !IsValidClient ( client ) || !g_iGlove [ client ] )
+		return Plugin_Handled;
+	#endif
 	
 	SetUserGloves ( client, g_iGlove [ client ], false );
 	return Plugin_Handled;
@@ -76,6 +107,14 @@ public Action CommandSetArms ( int client, int args ) {
 public Action hookPlayerSpawn ( Handle event, const char [ ] name, bool dontBroadcast ) {
 
 	int client = GetClientOfUserId ( GetEventInt ( event, "userid" ) );
+	
+	#if defined VIP_ONLY
+	if ( !IsValidClient ( client ) || !g_iGlove [ client ] || !IsUserVip ( client ) )
+		return Plugin_Handled;
+	#else
+	if ( !IsValidClient ( client ) || !g_iGlove [ client ] )
+		return Plugin_Handled;
+	#endif
 
 	FakeClientCommandEx(client, "sm_setarms");
 	/*
@@ -90,6 +129,8 @@ public Action hookPlayerSpawn ( Handle event, const char [ ] name, bool dontBroa
 	//if (!g_iGlove[client])return;
 	
 	//SetUserGloves ( client, g_iGlove [ client ], false );
+	
+	return Plugin_Continue;
 }
 
 /*
@@ -135,6 +176,17 @@ public void OnClientCookiesCached ( int Client ) {
 }
 
 public Action CommandGloves ( int client, int args ) {
+	
+	if ( !IsValidClient ( client ) )
+		return Plugin_Handled;
+		
+	#if defined VIP_ONLY
+	if ( !IsUserVip ( client ) ) {
+		
+		PrintToChat ( client, "%s This command is only for \x04VIPs\x01", PREFIX );
+		return Plugin_Handled;
+	}
+	#endif
 	
 	Handle menu = CreateMenu(GlovesMenu_Handler, MenuAction_Select | MenuAction_End);
 	SetMenuTitle(menu, "★ Gloves Menu ★");
@@ -738,16 +790,7 @@ stock void SetUserGloves ( client, glove, bool save ) {
 	
 	if ( IsValidClient ( client )) {
 		
-		if ( save ) {
-	        	
-	        	g_iGlove [ client ] = glove;
-	        	
-	      		char Data [ 32 ];
-			IntToString ( glove, Data, sizeof ( Data ) );
-			SetClientCookie ( client, g_pSave, Data );
-		}
-		
-		if(!IsPlayerAlive(client) || IsFakeClient(client))
+		if(!IsPlayerAlive(client) || !IsFakeClient(client))
 		{
 			return;
 		}
@@ -1034,6 +1077,15 @@ stock void SetUserGloves ( client, glove, bool save ) {
 	            
 	     
 	        }
+	        
+	        if ( save ) {
+	        	
+	        	g_iGlove [ client ] = glove;
+	        	
+	      		char Data [ 32 ];
+			IntToString ( glove, Data, sizeof ( Data ) );
+			SetClientCookie ( client, g_pSave, Data );
+		}
 		
 	}
 	
@@ -1061,7 +1113,7 @@ public Action AddItemTimer1(Handle timer, any ph)
     
     if (client != INVALID_ENT_REFERENCE && item != INVALID_ENT_REFERENCE)
     {
-        //SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", item);
+        SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", item);
         SetEntProp( item, Prop_Send, "m_iItemIDHigh", m_iItemIDHigh );
         SetEntProp( item, Prop_Send, "m_iItemIDLow", m_iItemIDLow );
     }
@@ -1117,3 +1169,29 @@ stock IsValidClient ( client ) {
 
 	return true;
 }
+
+#if defined VIP_ONLY
+bool IsUserVip ( int client ) {
+
+	if ( GetAdminFlag ( GetUserAdmin ( client ), VIP_FLAG )  )
+		return true;
+
+	return false;
+
+}
+#endif
+
+#if defined LICENSE
+void GetServerAddress(char[] Buffer, int Size)
+{
+	static int Addr = 0;
+
+	Addr = GetConVarInt(FindConVar("hostip"));
+
+	FormatEx(Buffer, Size, "%d.%d.%d.%d", \
+				(Addr >> 24) & 0xFF, \
+					(Addr >> 16) & 0xFF, \
+						(Addr >> 8) & 0xFF, \
+							Addr & 0xFF);
+}
+#endif
