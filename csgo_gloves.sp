@@ -35,7 +35,7 @@ public Plugin:myinfo =
 	name = "SM Valve Gloves",
 	author = "Franc1sco franug and hadesownage",
 	description = "",
-	version = "1.0.2",
+	version = "1.0.3",
 	url = "https://forums.alliedmods.net/showthread.php?t=291029"
 };
 
@@ -738,7 +738,16 @@ stock void SetUserGloves ( client, glove, bool save ) {
 	
 	if ( IsValidClient ( client )) {
 		
-		if(!IsPlayerAlive(client) || !IsFakeClient(client))
+		if ( save ) {
+	        	
+	        	g_iGlove [ client ] = glove;
+	        	
+	      		char Data [ 32 ];
+			IntToString ( glove, Data, sizeof ( Data ) );
+			SetClientCookie ( client, g_pSave, Data );
+		}
+		
+		if(!IsPlayerAlive(client) || IsFakeClient(client))
 		{
 			return;
 		}
@@ -1025,15 +1034,6 @@ stock void SetUserGloves ( client, glove, bool save ) {
 	            
 	     
 	        }
-	        
-	        if ( save ) {
-	        	
-	        	g_iGlove [ client ] = glove;
-	        	
-	      		char Data [ 32 ];
-			IntToString ( glove, Data, sizeof ( Data ) );
-			SetClientCookie ( client, g_pSave, Data );
-		}
 		
 	}
 	
@@ -1061,7 +1061,7 @@ public Action AddItemTimer1(Handle timer, any ph)
     
     if (client != INVALID_ENT_REFERENCE && item != INVALID_ENT_REFERENCE)
     {
-        SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", item);
+        //SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", item);
         SetEntProp( item, Prop_Send, "m_iItemIDHigh", m_iItemIDHigh );
         SetEntProp( item, Prop_Send, "m_iItemIDLow", m_iItemIDLow );
     }
