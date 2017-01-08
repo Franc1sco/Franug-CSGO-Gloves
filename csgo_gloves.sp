@@ -34,20 +34,20 @@ Handle g_pSave;
 int g_iGlove [ MAXPLAYERS + 1 ];
 
 int g_iGlovesEntity[MAXPLAYERS + 1];
-//Handle htimer[MAXPLAYERS + 1];
+
+#define timer_loop 3
+Handle htimer[MAXPLAYERS + 1][timer_loop];
 
 #if defined LICENSE
 char g_Address [ PLATFORM_MAX_PATH ];
 #endif
-
-int g_iNum [ MAXPLAYERS + 1 ];
 
 public Plugin:myinfo =
 {
 	name = "SM Valve Gloves",
 	author = "Franc1sco franug and hadesownage",
 	description = "",
-	version = "1.0.5",
+	version = "1.0.6",
 	url = "https://forums.alliedmods.net/showthread.php?t=291029"
 };
 
@@ -120,9 +120,12 @@ public Action hookPlayerSpawn ( Handle event, const char [ ] name, bool dontBroa
 		return Plugin_Handled;
 	#endif
 	
-	g_iNum [ client ] = 0;
-	CreateTimer ( 1.0, Delay, GetClientUserId ( client ) );
-		
+	OnClientDisconnect(client);
+	
+	int time = 0;
+	for (new i = 0; i < timer_loop; i++)
+		htimer[client][i] = CreateTimer ( 1.0*(time++), Delay, client);
+
 	/*
 	if(htimer[client] != INVALID_HANDLE)
 	{
@@ -139,28 +142,29 @@ public Action hookPlayerSpawn ( Handle event, const char [ ] name, bool dontBroa
 	return Plugin_Continue;
 }
 
-public Action Delay ( Handle timer, any user_index ) {
+public Action Delay ( Handle timer, any client) {
 
-	int client = GetClientOfUserId ( user_index );
-	if ( !client || !IsValidClient || g_iNum [ client ] >= 3 )
-		return;
+	for (new i = 0; i < timer_loop; i++)
+		if(htimer[client][i] != INVALID_HANDLE)
+		{
+			htimer[client][i] = INVALID_HANDLE;
+			break;
+		}
 	
 	FakeClientCommand(client, "sm_setarms" );
-	g_iNum [ client ]++;
-	CreateTimer ( 1.0, Delay, GetClientUserId ( client ) );
-
 }
 
-/*
+
 public OnClientDisconnect(client)
 {
-	if(htimer[client] != INVALID_HANDLE)
-	{
-		KillTimer(htimer[client]);
+	for (new i = 0; i < timer_loop; i++)
+		if(htimer[client][i] != INVALID_HANDLE)
+		{
+			KillTimer(htimer[client][i]);
 		
-		htimer[client] = INVALID_HANDLE;
-	}
-}*/
+			htimer[client][i] = INVALID_HANDLE;
+		}
+}
 
 public Action hookPlayerDeath ( Handle event, const char [ ] name, bool dontBroadcast ) {
 
@@ -814,7 +818,7 @@ stock void SetUserGloves ( client, glove, bool save ) {
 	
 	if ( IsValidClient ( client ) && glove > 0 ) {
 	
-		if ( IsPlayerAlive ( client ) ) {
+		if ( IsPlayerAlive ( client ) && GameRules_GetProp("m_bWarmupPeriod") != 1) {
 			
 			RemoveEntityGloves(client);
 			//ChangePlayerWeaponSlot ( client, 2 );
