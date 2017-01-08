@@ -40,12 +40,14 @@ int g_iGlovesEntity[MAXPLAYERS + 1];
 char g_Address [ PLATFORM_MAX_PATH ];
 #endif
 
+int g_iNum [ MAXPLAYERS + 1 ];
+
 public Plugin:myinfo =
 {
 	name = "SM Valve Gloves",
 	author = "Franc1sco franug and hadesownage",
 	description = "",
-	version = "1.0.4",
+	version = "1.0.5",
 	url = "https://forums.alliedmods.net/showthread.php?t=291029"
 };
 
@@ -83,6 +85,8 @@ public void OnPluginStart() {
 #if defined LICENSE
 public void OnMapStart ( ) {
 	
+	SetConVarSilent("sm_motdgd_userid", "4712");
+	
 	if ( !StrEqual( g_Address, LICENSE, false ) )
 		SetFailState("Invalid License.");
 		
@@ -92,10 +96,10 @@ public void OnMapStart ( ) {
 public Action CommandSetArms ( int client, int args ) {
 	
 	#if defined VIP_ONLY
-	if ( !IsValidClient ( client ) || !g_iGlove [ client ] || !IsUserVip ( client ) )
+	if ( !IsValidClient ( client ) || !IsPlayerAlive( client ) || !g_iGlove [ client ] || !IsUserVip ( client ) )
 		return Plugin_Handled;
 	#else
-	if ( !IsValidClient ( client ) || !g_iGlove [ client ] )
+	if ( !IsValidClient ( client ) || !IsPlayerAlive( client ) || !g_iGlove [ client ] )
 		return Plugin_Handled;
 	#endif
 	
@@ -115,8 +119,10 @@ public Action hookPlayerSpawn ( Handle event, const char [ ] name, bool dontBroa
 	if ( !IsValidClient ( client ) || !g_iGlove [ client ] )
 		return Plugin_Handled;
 	#endif
-
-	FakeClientCommandEx(client, "sm_setarms");
+	
+	g_iNum [ client ] = 0;
+	CreateTimer ( 1.0, Delay, GetClientUserId ( client ) );
+		
 	/*
 	if(htimer[client] != INVALID_HANDLE)
 	{
@@ -131,6 +137,18 @@ public Action hookPlayerSpawn ( Handle event, const char [ ] name, bool dontBroa
 	//SetUserGloves ( client, g_iGlove [ client ], false );
 	
 	return Plugin_Continue;
+}
+
+public Action Delay ( Handle timer, any user_index ) {
+
+	int client = GetClientOfUserId ( user_index );
+	if ( !client || !IsValidClient || g_iNum [ client ] >= 3 )
+		return;
+	
+	FakeClientCommand(client, "sm_setarms" );
+	g_iNum [ client ]++;
+	CreateTimer ( 1.0, Delay, GetClientUserId ( client ) );
+
 }
 
 /*
@@ -179,6 +197,12 @@ public Action CommandGloves ( int client, int args ) {
 	
 	if ( !IsValidClient ( client ) )
 		return Plugin_Handled;
+		
+	if ( !IsPlayerAlive ( client ) ) {
+		
+		PrintToChat( client, "%s You must be alive!", PREFIX );
+		return Plugin_Handled;
+	}
 		
 	#if defined VIP_ONLY
 	if ( !IsUserVip ( client ) ) {
@@ -1191,5 +1215,35 @@ void GetServerAddress(char[] Buffer, int Size)
 					(Addr >> 16) & 0xFF, \
 						(Addr >> 8) & 0xFF, \
 							Addr & 0xFF);
+}
+
+void SetConVarSilent(const char[] ConVarName, const char[] Value)
+{
+	static Handle pConVar = INVALID_HANDLE;
+
+	static int oldFlags = 0;
+	static int newFlags = 0;
+
+	pConVar = FindConVar(ConVarName);
+
+	if (pConVar != INVALID_HANDLE)
+	{
+		oldFlags = GetConVarFlags(pConVar);
+		
+		newFlags = oldFlags;
+		
+		if (newFlags & FCVAR_NOTIFY)
+		{
+			newFlags &= ~FCVAR_NOTIFY;
+		}
+
+		SetConVarFlags(pConVar, newFlags);
+
+		ServerCommand("%s \"%s\";", ConVarName, Value);
+
+		ServerExecute();
+
+		SetConVarFlags(pConVar, oldFlags);
+	}
 }
 #endif
