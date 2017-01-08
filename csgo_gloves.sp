@@ -47,7 +47,7 @@ public Plugin:myinfo =
 	name = "SM Valve Gloves",
 	author = "Franc1sco franug and hadesownage",
 	description = "",
-	version = "1.0.6",
+	version = "1.0.7",
 	url = "https://forums.alliedmods.net/showthread.php?t=291029"
 };
 
@@ -121,10 +121,11 @@ public Action hookPlayerSpawn ( Handle event, const char [ ] name, bool dontBroa
 	#endif
 	
 	OnClientDisconnect(client);
-	
+	FakeClientCommand(client, "sm_setarms" );
+	//PrintToChat(client, "done1");
 	int time = 0;
 	for (new i = 0; i < timer_loop; i++)
-		htimer[client][i] = CreateTimer ( 1.0*(time++), Delay, client);
+		htimer[client][i] = CreateTimer ( 1.0*(time += 2), Delay, client);
 
 	/*
 	if(htimer[client] != INVALID_HANDLE)
@@ -147,6 +148,7 @@ public Action Delay ( Handle timer, any client) {
 	for (new i = 0; i < timer_loop; i++)
 		if(htimer[client][i] != INVALID_HANDLE)
 		{
+			//PrintToChat(client, "done%i", i);
 			htimer[client][i] = INVALID_HANDLE;
 			break;
 		}
