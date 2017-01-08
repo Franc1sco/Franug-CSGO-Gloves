@@ -45,7 +45,7 @@ public Plugin:myinfo =
 	name = "SM Valve Gloves",
 	author = "Franc1sco franug and hadesownage",
 	description = "",
-	version = "1.0.3",
+	version = "1.0.4",
 	url = "https://forums.alliedmods.net/showthread.php?t=291029"
 };
 
@@ -226,7 +226,7 @@ public int GlovesMenu_Handler(Handle menu, MenuAction action, int param1, int pa
 				IntToString ( g_iGlove [ param1 ], Data, sizeof ( Data ) );
 				SetClientCookie ( param1, g_pSave, Data );
 			
-				PrintToChat ( param1, "%s You will have default gloves in your next spawn", PREFIX );
+				PrintToChat ( param1, "%s You will have default gloves in your next spawn.", PREFIX );
 				CommandGloves(param1, 0);
 			}
 			if (StrEqual(item, "Bloodhound"))
@@ -788,295 +788,293 @@ public Sport_Handler(Handle menu, MenuAction action, int param1, int param2)
 
 stock void SetUserGloves ( client, glove, bool save ) {
 	
-	if ( IsValidClient ( client )) {
-		
-		if(!IsPlayerAlive(client) || !IsFakeClient(client))
-		{
-			return;
+	if ( IsValidClient ( client ) && glove > 0 ) {
+	
+		if ( IsPlayerAlive ( client ) ) {
+			
+			RemoveEntityGloves(client);
+			//ChangePlayerWeaponSlot ( client, 2 );
+			int item = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
+			if (item == -1)return;
+			int type;
+			int skin;
+			
+			char model [ PLATFORM_MAX_PATH ];
+	        
+		        SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", -1);
+		        
+		        int ent = GivePlayerItem(client, "wearable_item");
+		        SetEntityRenderMode(ent, RENDER_NONE);
+		        
+		        switch ( glove ) {
+		        	
+		        	case 1: {
+		        		
+		        		type = BLOODHOUND;
+		        		skin = 10008;
+		        		
+		        		strcopy ( model, sizeof ( model ), BLOODHOUND_MODEL );
+		        		
+		        	}
+		        	
+		        	case 2: {
+		        		
+		        		type = BLOODHOUND;
+		        		skin = 10006;
+		        		
+		        		strcopy ( model, sizeof ( model ), BLOODHOUND_MODEL );
+		        		
+		        	}
+		        	case 3: {
+		        		
+		        		type = BLOODHOUND;
+		        		skin = 10039;
+		        		
+		        		strcopy ( model, sizeof ( model ), BLOODHOUND_MODEL );
+		        		
+		        	}
+		        	
+		        	case 4: {
+		        		
+		        		type = BLOODHOUND;
+		        		skin = 10007;
+		        		
+		        		strcopy ( model, sizeof ( model ), BLOODHOUND_MODEL );
+		        		
+		        	}
+		        	
+		        	case 5: {
+		        		
+		        		type = DRIVER;
+		        		skin = 10015;
+		        		
+		        		strcopy ( model, sizeof ( model ), DRIVER_MODEL );
+		        		
+		        	}
+		        	
+		        	case 6: {
+		        		
+		        		type = DRIVER;
+		        		skin = 10016;
+		        		
+		        		strcopy ( model, sizeof ( model ), DRIVER_MODEL );
+		        		
+		        	}
+		        	
+		        	case 7: {
+		        		
+		        		type = DRIVER;
+		        		skin = 10040;
+		        		
+		        		strcopy ( model, sizeof ( model ), DRIVER_MODEL );
+		        		
+		        	}
+		        	
+		        	case 8: {
+		        		
+		        		type = DRIVER;
+		        		skin = 10013;
+		        		
+		        		strcopy ( model, sizeof ( model ), DRIVER_MODEL );
+		        		
+		        	}
+		        	
+		        	case 9: {
+		        		
+		        		type = HAND;
+		        		skin = 10036;
+		        		
+		        		strcopy ( model, sizeof ( model ), HAND_MODEL );
+		        		
+		        	}
+		        	
+		        	case 10: {
+		        		
+		        		type = HAND;
+		        		skin = 10009;
+		        		
+		        		strcopy ( model, sizeof ( model ), HAND_MODEL );
+		        		
+		        	}
+		        	
+		        	case 11: {
+		        		
+		        		type = HAND;
+		        		skin = 10021;
+		        		
+		        		strcopy ( model, sizeof ( model ), HAND_MODEL );
+		        		
+		        	}
+		        	
+		        	case 12: {
+		        		
+		        		type = HAND;
+		        		skin = 10010;
+		        		
+		        		strcopy ( model, sizeof ( model ), HAND_MODEL );
+		        		
+		        	}
+		        	
+		        	case 13: {
+		        		
+		        		type = MOTOCYCLE;
+		        		skin = 10027;
+		        		
+		        		strcopy ( model, sizeof ( model ), MOTOCYCLE_MODEL );
+		        		
+		        	}
+		        	
+		        	case 14: {
+		        		
+		        		type = MOTOCYCLE;
+		        		skin = 10028;
+		        		
+		        		strcopy ( model, sizeof ( model ), MOTOCYCLE_MODEL );
+		        		
+		        	}
+		        	
+		        	case 15: {
+		        		
+		        		type = MOTOCYCLE;
+		        		skin = 10024;
+		        		
+		        		strcopy ( model, sizeof ( model ), MOTOCYCLE_MODEL );
+		        		
+		        	}
+		        	
+		        	case 16: {
+		        		
+		        		type = MOTOCYCLE;
+		        		skin = 10026;
+		        		
+		        		strcopy ( model, sizeof ( model ), MOTOCYCLE_MODEL );
+		        		
+		        	}
+		        	
+		        	case 17: {
+		        		
+		        		type = SPECIALIST;
+		        		skin = 10033;
+		        		
+		        		strcopy ( model, sizeof ( model ), SPECIALIST_MODEL );
+		        		
+		        	}
+		        	
+		        	case 18: {
+		        		
+		        		type = SPECIALIST;
+		        		skin = 10034;
+		        		
+		        		strcopy ( model, sizeof ( model ), SPECIALIST_MODEL );
+		        		
+		        	}
+		        	case 19: {
+		        		
+		        		type = SPECIALIST;
+		        		skin = 10030;
+		        		
+		        		strcopy ( model, sizeof ( model ), SPECIALIST_MODEL );
+		        		
+		        	}
+		        	
+		        	case 20: {
+		        		
+		        		type = SPECIALIST;
+		        		skin = 10035;
+		        		
+		        		strcopy ( model, sizeof ( model ), SPECIALIST_MODEL );
+		        		
+		        	}
+		        	
+		        	case 21: {
+		        		
+		        		type = SPORT;
+		        		skin = 10019;
+		        		
+		        		strcopy ( model, sizeof ( model ), SPORT_MODEL );
+		        		
+		        	}
+		        	
+		        	case 22: {
+		        		
+		        		type = SPORT;
+		        		skin = 10038;
+		        		
+		        		strcopy ( model, sizeof ( model ), SPORT_MODEL );
+		        		
+		        	}
+		        	
+		        	case 23: {
+		        		
+		        		type = SPORT;
+		        		skin = 10037;
+		        		
+		        		strcopy ( model, sizeof ( model ), SPORT_MODEL );
+		        		
+		        	}
+		        	
+		        	case 24: {
+		        		
+		        		type = SPORT;
+		        		skin = 10018;
+		        		
+		        		strcopy ( model, sizeof ( model ), SPORT_MODEL );
+		        		
+		        	}
+		        	
+		        }
+		        
+		        if (ent != -1)
+		        {
+		            
+		        	
+		            int m_iItemIDHigh = GetEntProp( ent, Prop_Send, "m_iItemIDHigh" );
+		            int m_iItemIDLow = GetEntProp( ent, Prop_Send, "m_iItemIDLow" );
+		            
+		            SetEntProp(ent, Prop_Send, "m_iItemDefinitionIndex", type );
+		            SetEntProp(ent, Prop_Send, "m_iItemIDLow", 8192+client);
+		            SetEntProp(ent, Prop_Send, "m_iItemIDHigh", -1);
+		            SetEntProp(ent, Prop_Send, "m_iEntityQuality", 4);
+		            
+		            SetEntPropFloat(ent, Prop_Send, "m_flFallbackWear", 0.00000001);
+		            
+		            SetEntProp(ent, Prop_Send,  "m_iAccountID", GetSteamAccountID(client));
+		            
+		            SetEntProp(ent, Prop_Send,  "m_nFallbackSeed", 0);
+		            SetEntProp(ent, Prop_Send,  "m_nFallbackStatTrak", -1);
+		            SetEntProp(ent, Prop_Send,  "m_nFallbackPaintKit", skin);
+		            
+		            if (!IsModelPrecached(model)) PrecacheModel(model);
+		            
+		            SetEntProp(ent, Prop_Send, "m_nModelIndex", PrecacheModel(model));
+		            SetEntityModel(ent, model);
+		            
+		            //SetEntPropEnt(client, Prop_Send, "m_hMyWearables", -1);
+		            SetEntPropEnt(client, Prop_Send, "m_hMyWearables", ent);
+		            
+		            g_iGlovesEntity[client] = EntIndexToEntRef(ent);
+		            
+		            Handle ph1 = CreateDataPack();
+		            CreateTimer(3.0, AddItemTimer1, ph1, TIMER_FLAG_NO_MAPCHANGE);
+		            
+		            WritePackCell(ph1, EntIndexToEntRef(client));
+		            WritePackCell(ph1, EntIndexToEntRef(item));
+		            WritePackCell(ph1, EntIndexToEntRef(ent));
+		            WritePackCell(ph1, EntIndexToEntRef(m_iItemIDHigh));
+		            WritePackCell(ph1, EntIndexToEntRef(m_iItemIDLow));
+		            
+		            //SetEntityRenderMode(ent, RENDER_NONE);
+		            
+		            Handle ph2 = CreateDataPack();
+		            CreateTimer(0.0, AddItemTimer2, ph2, TIMER_FLAG_NO_MAPCHANGE);
+		            
+		            WritePackCell(ph2, EntIndexToEntRef(client));
+		            WritePackCell(ph2, EntIndexToEntRef(item));
+		            
+		     
+		        }
+		        
 		}
-		
-		if (glove < 1)return;
-		RemoveEntityGloves(client);
-		//ChangePlayerWeaponSlot ( client, 2 );
-		int item = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
-		if (item == -1)return;
-		int type;
-		int skin;
-		
-		char model [ PLATFORM_MAX_PATH ];
-        
-	        SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", -1);
-	        
-	        int ent = GivePlayerItem(client, "wearable_item");
-	        SetEntityRenderMode(ent, RENDER_NONE);
-	        
-	        switch ( glove ) {
-	        	
-	        	case 1: {
-	        		
-	        		type = BLOODHOUND;
-	        		skin = 10008;
-	        		
-	        		strcopy ( model, sizeof ( model ), BLOODHOUND_MODEL );
-	        		
-	        	}
-	        	
-	        	case 2: {
-	        		
-	        		type = BLOODHOUND;
-	        		skin = 10006;
-	        		
-	        		strcopy ( model, sizeof ( model ), BLOODHOUND_MODEL );
-	        		
-	        	}
-	        	case 3: {
-	        		
-	        		type = BLOODHOUND;
-	        		skin = 10039;
-	        		
-	        		strcopy ( model, sizeof ( model ), BLOODHOUND_MODEL );
-	        		
-	        	}
-	        	
-	        	case 4: {
-	        		
-	        		type = BLOODHOUND;
-	        		skin = 10007;
-	        		
-	        		strcopy ( model, sizeof ( model ), BLOODHOUND_MODEL );
-	        		
-	        	}
-	        	
-	        	case 5: {
-	        		
-	        		type = DRIVER;
-	        		skin = 10015;
-	        		
-	        		strcopy ( model, sizeof ( model ), DRIVER_MODEL );
-	        		
-	        	}
-	        	
-	        	case 6: {
-	        		
-	        		type = DRIVER;
-	        		skin = 10016;
-	        		
-	        		strcopy ( model, sizeof ( model ), DRIVER_MODEL );
-	        		
-	        	}
-	        	
-	        	case 7: {
-	        		
-	        		type = DRIVER;
-	        		skin = 10040;
-	        		
-	        		strcopy ( model, sizeof ( model ), DRIVER_MODEL );
-	        		
-	        	}
-	        	
-	        	case 8: {
-	        		
-	        		type = DRIVER;
-	        		skin = 10013;
-	        		
-	        		strcopy ( model, sizeof ( model ), DRIVER_MODEL );
-	        		
-	        	}
-	        	
-	        	case 9: {
-	        		
-	        		type = HAND;
-	        		skin = 10036;
-	        		
-	        		strcopy ( model, sizeof ( model ), HAND_MODEL );
-	        		
-	        	}
-	        	
-	        	case 10: {
-	        		
-	        		type = HAND;
-	        		skin = 10009;
-	        		
-	        		strcopy ( model, sizeof ( model ), HAND_MODEL );
-	        		
-	        	}
-	        	
-	        	case 11: {
-	        		
-	        		type = HAND;
-	        		skin = 10021;
-	        		
-	        		strcopy ( model, sizeof ( model ), HAND_MODEL );
-	        		
-	        	}
-	        	
-	        	case 12: {
-	        		
-	        		type = HAND;
-	        		skin = 10010;
-	        		
-	        		strcopy ( model, sizeof ( model ), HAND_MODEL );
-	        		
-	        	}
-	        	
-	        	case 13: {
-	        		
-	        		type = MOTOCYCLE;
-	        		skin = 10027;
-	        		
-	        		strcopy ( model, sizeof ( model ), MOTOCYCLE_MODEL );
-	        		
-	        	}
-	        	
-	        	case 14: {
-	        		
-	        		type = MOTOCYCLE;
-	        		skin = 10028;
-	        		
-	        		strcopy ( model, sizeof ( model ), MOTOCYCLE_MODEL );
-	        		
-	        	}
-	        	
-	        	case 15: {
-	        		
-	        		type = MOTOCYCLE;
-	        		skin = 10024;
-	        		
-	        		strcopy ( model, sizeof ( model ), MOTOCYCLE_MODEL );
-	        		
-	        	}
-	        	
-	        	case 16: {
-	        		
-	        		type = MOTOCYCLE;
-	        		skin = 10026;
-	        		
-	        		strcopy ( model, sizeof ( model ), MOTOCYCLE_MODEL );
-	        		
-	        	}
-	        	
-	        	case 17: {
-	        		
-	        		type = SPECIALIST;
-	        		skin = 10033;
-	        		
-	        		strcopy ( model, sizeof ( model ), SPECIALIST_MODEL );
-	        		
-	        	}
-	        	
-	        	case 18: {
-	        		
-	        		type = SPECIALIST;
-	        		skin = 10034;
-	        		
-	        		strcopy ( model, sizeof ( model ), SPECIALIST_MODEL );
-	        		
-	        	}
-	        	case 19: {
-	        		
-	        		type = SPECIALIST;
-	        		skin = 10030;
-	        		
-	        		strcopy ( model, sizeof ( model ), SPECIALIST_MODEL );
-	        		
-	        	}
-	        	
-	        	case 20: {
-	        		
-	        		type = SPECIALIST;
-	        		skin = 10035;
-	        		
-	        		strcopy ( model, sizeof ( model ), SPECIALIST_MODEL );
-	        		
-	        	}
-	        	
-	        	case 21: {
-	        		
-	        		type = SPORT;
-	        		skin = 10019;
-	        		
-	        		strcopy ( model, sizeof ( model ), SPORT_MODEL );
-	        		
-	        	}
-	        	
-	        	case 22: {
-	        		
-	        		type = SPORT;
-	        		skin = 10038;
-	        		
-	        		strcopy ( model, sizeof ( model ), SPORT_MODEL );
-	        		
-	        	}
-	        	
-	        	case 23: {
-	        		
-	        		type = SPORT;
-	        		skin = 10037;
-	        		
-	        		strcopy ( model, sizeof ( model ), SPORT_MODEL );
-	        		
-	        	}
-	        	
-	        	case 24: {
-	        		
-	        		type = SPORT;
-	        		skin = 10018;
-	        		
-	        		strcopy ( model, sizeof ( model ), SPORT_MODEL );
-	        		
-	        	}
-	        	
-	        }
-	        
-	        if (ent != -1)
-	        {
-	            
-	        	
-	            int m_iItemIDHigh = GetEntProp( ent, Prop_Send, "m_iItemIDHigh" );
-	            int m_iItemIDLow = GetEntProp( ent, Prop_Send, "m_iItemIDLow" );
-	            
-	            SetEntProp(ent, Prop_Send, "m_iItemDefinitionIndex", type );
-	            SetEntProp(ent, Prop_Send, "m_iItemIDLow", 8192+client);
-	            SetEntProp(ent, Prop_Send, "m_iItemIDHigh", -1);
-	            SetEntProp(ent, Prop_Send, "m_iEntityQuality", 4);
-	            
-	            SetEntPropFloat(ent, Prop_Send, "m_flFallbackWear", 0.00000001);
-	            
-	            SetEntProp(ent, Prop_Send,  "m_iAccountID", GetSteamAccountID(client));
-	            
-	            SetEntProp(ent, Prop_Send,  "m_nFallbackSeed", 0);
-	            SetEntProp(ent, Prop_Send,  "m_nFallbackStatTrak", -1);
-	            SetEntProp(ent, Prop_Send,  "m_nFallbackPaintKit", skin);
-	            
-	            if (!IsModelPrecached(model)) PrecacheModel(model);
-	            
-	            SetEntProp(ent, Prop_Send, "m_nModelIndex", PrecacheModel(model));
-	            SetEntityModel(ent, model);
-	            
-	            //SetEntPropEnt(client, Prop_Send, "m_hMyWearables", -1);
-	            SetEntPropEnt(client, Prop_Send, "m_hMyWearables", ent);
-	            
-	            g_iGlovesEntity[client] = EntIndexToEntRef(ent);
-	            
-	            Handle ph1 = CreateDataPack();
-	            CreateTimer(3.0, AddItemTimer1, ph1, TIMER_FLAG_NO_MAPCHANGE);
-	            
-	            WritePackCell(ph1, EntIndexToEntRef(client));
-	            WritePackCell(ph1, EntIndexToEntRef(item));
-	            WritePackCell(ph1, EntIndexToEntRef(ent));
-	            WritePackCell(ph1, EntIndexToEntRef(m_iItemIDHigh));
-	            WritePackCell(ph1, EntIndexToEntRef(m_iItemIDLow));
-	            
-	            //SetEntityRenderMode(ent, RENDER_NONE);
-	            
-	            Handle ph2 = CreateDataPack();
-	            CreateTimer(0.0, AddItemTimer2, ph2, TIMER_FLAG_NO_MAPCHANGE);
-	            
-	            WritePackCell(ph2, EntIndexToEntRef(client));
-	            WritePackCell(ph2, EntIndexToEntRef(item));
-	            
-	     
-	        }
 	        
 	        if ( save ) {
 	        	
