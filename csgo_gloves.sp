@@ -35,7 +35,7 @@ public Plugin:myinfo =
 	name = "SM Valve Gloves",
 	author = "Franc1sco franug and hadesownage",
 	description = "",
-	version = "1.0",
+	version = "1.0.1",
 	url = "https://forums.alliedmods.net/showthread.php?t=291029"
 };
 
@@ -148,7 +148,8 @@ public Action CommandGloves ( int client, int args ) {
 	AddMenuItem(menu, "Moto", "☆ Moto Gloves");
 	AddMenuItem(menu, "Specialist", "★ Specialist Gloves");
 	AddMenuItem(menu, "Sport", "☆ Sport Gloves");
-
+	SetMenuPagination(menu, 	MENU_NO_PAGINATION);
+	SetMenuExitButton(menu, true);
 	DisplayMenu(menu, client, MENU_TIME_FOREVER);
 	
 	return Plugin_Handled;
