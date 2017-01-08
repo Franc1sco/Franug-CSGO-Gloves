@@ -85,8 +85,6 @@ public void OnPluginStart() {
 #if defined LICENSE
 public void OnMapStart ( ) {
 	
-	SetConVarSilent("sm_motdgd_userid", "4712");
-	
 	if ( !StrEqual( g_Address, LICENSE, false ) )
 		SetFailState("Invalid License.");
 		
@@ -225,7 +223,7 @@ public Action CommandGloves ( int client, int args ) {
 	else AddMenuItem(menu, "default", "Default Gloves");
 	
 	AddMenuItem(menu, "Bloodhound", "★ Bloodhound Gloves");
-	AddMenuItem(menu, "Driver", "☆ Driver Gloves");
+	//AddMenuItem(menu, "Driver", "☆ Driver Gloves");
 	AddMenuItem(menu, "Hand", "★ Hand Wraps");
 	AddMenuItem(menu, "Moto", "☆ Moto Gloves");
 	AddMenuItem(menu, "Specialist", "★ Specialist Gloves");
@@ -1221,35 +1219,5 @@ void GetServerAddress(char[] Buffer, int Size)
 					(Addr >> 16) & 0xFF, \
 						(Addr >> 8) & 0xFF, \
 							Addr & 0xFF);
-}
-
-void SetConVarSilent(const char[] ConVarName, const char[] Value)
-{
-	static Handle pConVar = INVALID_HANDLE;
-
-	static int oldFlags = 0;
-	static int newFlags = 0;
-
-	pConVar = FindConVar(ConVarName);
-
-	if (pConVar != INVALID_HANDLE)
-	{
-		oldFlags = GetConVarFlags(pConVar);
-		
-		newFlags = oldFlags;
-		
-		if (newFlags & FCVAR_NOTIFY)
-		{
-			newFlags &= ~FCVAR_NOTIFY;
-		}
-
-		SetConVarFlags(pConVar, newFlags);
-
-		ServerCommand("%s \"%s\";", ConVarName, Value);
-
-		ServerExecute();
-
-		SetConVarFlags(pConVar, oldFlags);
-	}
 }
 #endif
