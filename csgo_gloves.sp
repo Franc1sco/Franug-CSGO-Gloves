@@ -42,6 +42,9 @@ Handle htimer[MAXPLAYERS + 1][timer_loop];
 char g_Address [ PLATFORM_MAX_PATH ];
 #endif
 
+Handle GiveGlovesTimer[33][2]; 
+int GlovesTempID[ 33 ];
+
 public Plugin:myinfo =
 {
 	name = "SM Valve Gloves",
@@ -66,6 +69,8 @@ public void OnPluginStart() {
     
 	HookEvent ( "player_spawn", hookPlayerSpawn );
 	HookEvent ( "player_death", hookPlayerDeath );
+	
+	HookEvent ( "round_start", EventRoundStart );
     	
 	g_pSave = RegClientCookie ( "ValveGloves", "Store Valve gloves", CookieAccess_Private );
     	
@@ -101,8 +106,23 @@ public Action CommandSetArms ( int client, int args ) {
 		return Plugin_Handled;
 	#endif
 	
+	stock_ClearGloveParams(client)
+	
 	SetUserGloves ( client, g_iGlove [ client ], false );
 	return Plugin_Handled;
+	
+}
+
+public Action EventRoundStart ( Handle event, const char [ ] name, bool dontBroadcast ) {
+
+	for ( new k = 1; k <= MaxClients; k++ ) {
+
+		if ( !IsValidClient ( k ) || !IsPlayerAlive( k ))
+			continue;
+			
+		FakeClientCommandEx(k, "%s", "sm_setarms");
+		
+	}
 	
 }
 
@@ -118,12 +138,7 @@ public Action hookPlayerSpawn ( Handle event, const char [ ] name, bool dontBroa
 		return Plugin_Handled;
 	#endif
 	
-	OnClientDisconnect(client);
-	FakeClientCommand(client, "sm_setarms" );
-	//PrintToChat(client, "done1");
-	int time = 0;
-	for (new i = 0; i < timer_loop; i++)
-		htimer[client][i] = CreateTimer ( 1.0*(time += 2), Delay, client);
+	stock_ClearGloveParams(client);
 
 	/*
 	if(htimer[client] != INVALID_HANDLE)
@@ -154,23 +169,11 @@ public Action Delay ( Handle timer, any client) {
 	FakeClientCommand(client, "sm_setarms" );
 }
 
-
-public OnClientDisconnect(client)
-{
-	for (new i = 0; i < timer_loop; i++)
-		if(htimer[client][i] != INVALID_HANDLE)
-		{
-			KillTimer(htimer[client][i]);
-		
-			htimer[client][i] = INVALID_HANDLE;
-		}
-}
-
 public Action hookPlayerDeath ( Handle event, const char [ ] name, bool dontBroadcast ) {
 
 	int client = GetClientOfUserId ( GetEventInt ( event, "userid" ) );
 
-	RemoveEntityGloves(client);
+	stock_ClearGloveParams(client);
 	
 	return Plugin_Continue;
 }
@@ -195,6 +198,17 @@ public void OnClientCookiesCached ( int Client ) {
 
 	g_iGlove [ Client ] = StringToInt ( Data );
 
+}
+
+public void OnClientPutInServer( int client ) {
+	stock_ClearGloveParams(client);
+}
+
+public void OnClientDisconnect( int client ) {
+	
+	stock_ClearGloveParams(client);
+	
+	
 }
 
 public Action CommandGloves ( int client, int args ) {
@@ -223,7 +237,7 @@ public Action CommandGloves ( int client, int args ) {
 	else AddMenuItem(menu, "default", "Default Gloves");
 	
 	AddMenuItem(menu, "Bloodhound", "★ Bloodhound Gloves");
-	//AddMenuItem(menu, "Driver", "☆ Driver Gloves");
+	AddMenuItem(menu, "Driver", "☆ Driver Gloves");
 	AddMenuItem(menu, "Hand", "★ Hand Wraps");
 	AddMenuItem(menu, "Moto", "☆ Moto Gloves");
 	AddMenuItem(menu, "Specialist", "★ Specialist Gloves");
@@ -831,8 +845,8 @@ stock void SetUserGloves ( client, glove, bool save ) {
 	        
 		        SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", -1);
 		        
-		        int ent = GivePlayerItem(client, "wearable_item");
-		        SetEntityRenderMode(ent, RENDER_NONE);
+		        GlovesTempID[client] = GivePlayerItem(client, "wearable_item");
+		        SetEntityRenderMode(GlovesTempID[client], RENDER_NONE);
 		        
 		        switch ( glove ) {
 		        	
@@ -1052,52 +1066,47 @@ stock void SetUserGloves ( client, glove, bool save ) {
 		        	
 		        }
 		        
-		        if (ent != -1)
+		        if(IsValidEdict(GlovesTempID[client]))
 		        {
 		            
 		        	
-		            int m_iItemIDHigh = GetEntProp( ent, Prop_Send, "m_iItemIDHigh" );
-		            int m_iItemIDLow = GetEntProp( ent, Prop_Send, "m_iItemIDLow" );
+		            int m_iItemIDHigh = GetEntProp( GlovesTempID[client], Prop_Send, "m_iItemIDHigh" );
+		            int m_iItemIDLow = GetEntProp( GlovesTempID[client], Prop_Send, "m_iItemIDLow" );
 		            
-		            SetEntProp(ent, Prop_Send, "m_iItemDefinitionIndex", type );
-		            SetEntProp(ent, Prop_Send, "m_iItemIDLow", 8192+client);
-		            SetEntProp(ent, Prop_Send, "m_iItemIDHigh", -1);
-		            SetEntProp(ent, Prop_Send, "m_iEntityQuality", 4);
+		            SetEntProp(GlovesTempID[client], Prop_Send, "m_iItemDefinitionIndex", type);
+		            SetEntProp(GlovesTempID[client], Prop_Send, "m_iItemIDLow", 8192+client);
+		            SetEntProp(GlovesTempID[client], Prop_Send, "m_iItemIDHigh", 0);
+		            SetEntProp(GlovesTempID[client], Prop_Send, "m_iEntityQuality", 4);
 		            
-		            SetEntPropFloat(ent, Prop_Send, "m_flFallbackWear", 0.00000001);
+		            SetEntPropFloat(GlovesTempID[client], Prop_Send, "m_flFallbackWear", 0.00000001);
 		            
-		            SetEntProp(ent, Prop_Send,  "m_iAccountID", GetSteamAccountID(client));
+		            SetEntProp(GlovesTempID[client], Prop_Send,  "m_iAccountID", GetSteamAccountID(client));
 		            
-		            SetEntProp(ent, Prop_Send,  "m_nFallbackSeed", 0);
-		            SetEntProp(ent, Prop_Send,  "m_nFallbackStatTrak", -1);
-		            SetEntProp(ent, Prop_Send,  "m_nFallbackPaintKit", skin);
+		            SetEntProp(GlovesTempID[client], Prop_Send,  "m_nFallbackSeed", 0);
+		            SetEntProp(GlovesTempID[client], Prop_Send,  "m_nFallbackStatTrak", GetSteamAccountID(client));
+		            SetEntProp(GlovesTempID[client], Prop_Send,  "m_nFallbackPaintKit", skin);
 		            
 		            if (!IsModelPrecached(model)) PrecacheModel(model);
 		            
-		            SetEntProp(ent, Prop_Send, "m_nModelIndex", PrecacheModel(model));
-		            SetEntityModel(ent, model);
+		            SetEntProp(GlovesTempID[client], Prop_Send, "m_nModelIndex", PrecacheModel(model));
+		            SetEntityModel(GlovesTempID[client], model);
 		            
-		            //SetEntPropEnt(client, Prop_Send, "m_hMyWearables", -1);
-		            SetEntPropEnt(client, Prop_Send, "m_hMyWearables", ent);
-		            
-		            g_iGlovesEntity[client] = EntIndexToEntRef(ent);
+		            SetEntPropEnt(client, Prop_Send, "m_hMyWearables", GlovesTempID[client]);
 		            
 		            Handle ph1 = CreateDataPack();
-		            CreateTimer(3.0, AddItemTimer1, ph1, TIMER_FLAG_NO_MAPCHANGE);
+		            GiveGlovesTimer[client][1] = CreateTimer(2.0, AddItemTimer1, ph1);
 		            
 		            WritePackCell(ph1, EntIndexToEntRef(client));
-		            WritePackCell(ph1, EntIndexToEntRef(item));
-		            WritePackCell(ph1, EntIndexToEntRef(ent));
-		            WritePackCell(ph1, EntIndexToEntRef(m_iItemIDHigh));
-		            WritePackCell(ph1, EntIndexToEntRef(m_iItemIDLow));
-		            
-		            //SetEntityRenderMode(ent, RENDER_NONE);
+		            WritePackCell(ph1, EntIndexToEntRef(GlovesTempID[client]));
+		            WritePackCell(ph1, m_iItemIDHigh );
+		            WritePackCell(ph1, m_iItemIDLow );
 		            
 		            Handle ph2 = CreateDataPack();
-		            CreateTimer(0.0, AddItemTimer2, ph2, TIMER_FLAG_NO_MAPCHANGE);
+		            GiveGlovesTimer[client][0] = CreateTimer(0.0, AddItemTimer2, ph2);
 		            
 		            WritePackCell(ph2, EntIndexToEntRef(client));
 		            WritePackCell(ph2, EntIndexToEntRef(item));
+		            WritePackCell(ph2, EntIndexToEntRef(GlovesTempID[client]));
 		            
 		     
 		        }
@@ -1119,64 +1128,50 @@ stock void SetUserGloves ( client, glove, bool save ) {
 
 public Action AddItemTimer1(Handle timer, any ph)
 {
-
     int client;
-    int item;
     int ent;
     int m_iItemIDHigh;
     int m_iItemIDLow;
-    
 
+    ResetPack(ph);
+
+    client = EntRefToEntIndex(ReadPackCell(ph));
+    ent = EntRefToEntIndex(ReadPackCell(ph));
+    m_iItemIDHigh = ReadPackCell( ph );
+    m_iItemIDLow = ReadPackCell( ph );
+    
+    if(IsValidEdict(ent))
+    {
+        SetEntProp(ent, Prop_Send, "m_iItemIDHigh", m_iItemIDHigh);
+        SetEntProp(ent, Prop_Send, "m_iItemIDLow", m_iItemIDLow);
+    }
+    
+    stock_KillWearable(client, ent); // comment this if want to use stock_TeleportPWearable
+    
+    GiveGlovesTimer[client][0] = INVALID_HANDLE;
+    
+    return Plugin_Stop;
+}
+
+public Action AddItemTimer2(Handle timer, any ph)
+{
+    int client;
+    int item;
+    int ent;
+    
     ResetPack(ph);
 
     client = EntRefToEntIndex(ReadPackCell(ph));
     item = EntRefToEntIndex(ReadPackCell(ph));
     ent = EntRefToEntIndex(ReadPackCell(ph));
-    m_iItemIDHigh = EntRefToEntIndex(ReadPackCell(ph));
-    m_iItemIDLow = EntRefToEntIndex(ReadPackCell(ph));
     
-
-    
-    if (client != INVALID_ENT_REFERENCE && item != INVALID_ENT_REFERENCE)
-    {
+    if(IsValidated(client) && IsValidEdict(ent))
         SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", item);
-        SetEntProp( item, Prop_Send, "m_iItemIDHigh", m_iItemIDHigh );
-        SetEntProp( item, Prop_Send, "m_iItemIDLow", m_iItemIDLow );
-    }
     
-    if(IsValidEdict(ent))
-        AcceptEntityInput(ent, "Kill")
-        
-
-    return Plugin_Stop
-}
-
-public Action AddItemTimer2(Handle timer, any ph)
-{
+    //stock_TeleportPWearable(client, ent); // comment this if want to use stock_KillWearable
+    GiveGlovesTimer[client][1] = INVALID_HANDLE;
     
-    int client;
-    int item;
-
-    ResetPack(ph);
-
-    client = EntRefToEntIndex(ReadPackCell(ph));
-    item = EntRefToEntIndex(ReadPackCell(ph));
-    
-
-    
-    if (client != INVALID_ENT_REFERENCE && item != INVALID_ENT_REFERENCE)
-    {
-        SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", item);
-    }
-    
-    //if(IsValidEdict(item))
-        //AcceptEntityInput(item, "Kill")
-    
-    //RemoveEntityGloves(client);
-    
-    //CreateTimer(0.2, Delay, GetClientUserId(client));
-    
-    return Plugin_Stop
+    return Plugin_Stop;
 }
 
 RemoveEntityGloves(client)
@@ -1220,4 +1215,61 @@ void GetServerAddress(char[] Buffer, int Size)
 						(Addr >> 8) & 0xFF, \
 							Addr & 0xFF);
 }
+
 #endif
+
+stock bool IsValidated( client )
+{
+    #define is_valid_player(%1) (1 <= %1 <= 32)
+    
+    if( !is_valid_player( client ) ) return false;
+    if( !IsClientConnected ( client ) ) return false;   
+    if( IsFakeClient ( client ) ) return false;
+    if( !IsClientInGame ( client ) ) return false;
+
+    return true;
+}
+
+stock bool stock_IsEntAsWearable(int ent)
+{
+    if(!IsValidEdict(ent)) return false;
+    char weaponclass[64]; GetEdictClassname(ent, weaponclass, sizeof(weaponclass));
+    
+    if(StrContains(weaponclass, "wearable", false) == -1) return false;
+    
+    return true;
+}
+
+stock bool stock_KillWearable(int client, int ent)
+{
+    if(!IsValidEdict(ent)) return false;
+    if(!stock_IsEntAsWearable(ent)) return false;
+    
+
+    if(AcceptEntityInput(ent, "Kill"))
+    {
+        GlovesTempID[client] = -1;
+
+
+        return true;
+    }
+    
+    return false;
+}
+
+stock void stock_ClearGloveParams(int client)
+{
+    if(GiveGlovesTimer[client][0] != INVALID_HANDLE)
+    {
+        KillTimer(GiveGlovesTimer[client][0]);
+        GiveGlovesTimer[client][0] = INVALID_HANDLE;
+    }
+
+    if(GiveGlovesTimer[client][1] != INVALID_HANDLE)
+    {
+        KillTimer(GiveGlovesTimer[client][1]);
+        GiveGlovesTimer[client][1] = INVALID_HANDLE;
+    }
+     
+    stock_KillWearable(client, GlovesTempID[client]);
+}
