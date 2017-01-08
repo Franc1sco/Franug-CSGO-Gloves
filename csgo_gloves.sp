@@ -70,7 +70,7 @@ public void OnPluginStart() {
 	HookEvent ( "player_spawn", hookPlayerSpawn );
 	HookEvent ( "player_death", hookPlayerDeath );
 	
-	HookEvent ( "round_start", EventRoundStart );
+	//HookEvent ( "round_start", EventRoundStart );
     	
 	g_pSave = RegClientCookie ( "ValveGloves", "Store Valve gloves", CookieAccess_Private );
     	
@@ -139,6 +139,7 @@ public Action hookPlayerSpawn ( Handle event, const char [ ] name, bool dontBroa
 	#endif
 	
 	stock_ClearGloveParams(client);
+	FakeClientCommandEx(client, "%s", "sm_setarms");
 
 	/*
 	if(htimer[client] != INVALID_HANDLE)
@@ -1215,7 +1216,6 @@ void GetServerAddress(char[] Buffer, int Size)
 						(Addr >> 8) & 0xFF, \
 							Addr & 0xFF);
 }
-
 #endif
 
 stock bool IsValidated( client )
