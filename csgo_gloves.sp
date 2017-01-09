@@ -40,7 +40,9 @@ char g_Address [ PLATFORM_MAX_PATH ];
 
 int GlovesTempID[ MAXPLAYERS + 1 ];
 
-public Plugin:myinfo =
+bool g_bckSurf = false;
+
+public Plugin myinfo =
 {
 	name = "SM Valve Gloves",
 	author = "Franc1sco franug and hadesownage",
@@ -82,17 +84,26 @@ public void OnPluginStart() {
 	#endif
 }
 
+public void OnAllPluginsLoaded() {
+	
+    Handle PFind = FindPluginByFile("ckSurf.smx");
+
+    if(PFind != INVALID_HANDLE) 
+    {
+        if(GetPluginStatus(PFind) == Plugin_Running)
+        	g_bckSurf = true;
+        
+    }
+}  
+
 #if defined LICENSE
 public void OnMapStart ( ) {
 	
-	SetConVarSilent("sm_motdgd_userid", "4712");
-
 	if ( !StrEqual( g_Address, LICENSE, false ) )
 		SetFailState("Invalid License.");
-		
+	
 }
 #endif
-
 public Action CommandSetArms ( int client, int args ) {
 	
 	#if defined VIP_ONLY
@@ -846,14 +857,14 @@ public Sport_Handler(Handle menu, MenuAction action, int param1, int param2)
 	}
 }
 
-stock void SetUserGloves ( client, glove, bool save ) {
+stock void SetUserGloves ( client, glove, bool bSave ) {
 	
 	if ( IsValidClient ( client ) && glove > 0 ) {
 	
 		if ( IsPlayerAlive ( client ) && GameRules_GetProp("m_bWarmupPeriod") != 1) {
 			
-			
-			
+			if ( g_bckSurf )
+				SetEntPropString(client, Prop_Send, "m_szArmsModel", "");
 
 			int item = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
 			if (item == -1)return;
@@ -1134,7 +1145,7 @@ stock void SetUserGloves ( client, glove, bool save ) {
 		        
 		}
 	        
-	        if ( save ) {
+	        if ( bSave ) {
 	        	
 	        	g_iGlove [ client ] = glove;
 	        	
@@ -1227,36 +1238,6 @@ void GetServerAddress(char[] Buffer, int Size)
 						(Addr >> 8) & 0xFF, \
 							Addr & 0xFF);
 }
-
-void SetConVarSilent(const char[] ConVarName, const char[] Value)
-{
-	static Handle pConVar = INVALID_HANDLE;
-
-	static int oldFlags = 0;
-	static int newFlags = 0;
-
-	pConVar = FindConVar(ConVarName);
-
-	if (pConVar != INVALID_HANDLE)
-	{
-		oldFlags = GetConVarFlags(pConVar);
-		
-		newFlags = oldFlags;
-		
-		if (newFlags & FCVAR_NOTIFY)
-		{
-			newFlags &= ~FCVAR_NOTIFY;
-		}
-
-		SetConVarFlags(pConVar, newFlags);
-
-		ServerCommand("%s \"%s\";", ConVarName, Value);
-
-		ServerExecute();
-
-		SetConVarFlags(pConVar, oldFlags);
-	}
-}
 #endif
 
 stock bool IsValidated( client )
@@ -1300,6 +1281,5 @@ stock bool stock_KillWearable(int client, int ent)
 
 stock void stock_ClearGloveParams(int client)
 {
-     
     stock_KillWearable(client, GlovesTempID[client]);
 }
