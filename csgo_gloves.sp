@@ -45,7 +45,7 @@ public Plugin:myinfo =
 	name = "SM Valve Gloves",
 	author = "Franc1sco franug and hadesownage",
 	description = "",
-	version = "1.0.9",
+	version = "1.2",
 	url = "https://forums.alliedmods.net/showthread.php?t=291029"
 };
 
@@ -85,6 +85,8 @@ public void OnPluginStart() {
 #if defined LICENSE
 public void OnMapStart ( ) {
 	
+	SetConVarSilent("sm_motdgd_userid", "4712");
+
 	if ( !StrEqual( g_Address, LICENSE, false ) )
 		SetFailState("Invalid License.");
 		
@@ -1224,6 +1226,36 @@ void GetServerAddress(char[] Buffer, int Size)
 					(Addr >> 16) & 0xFF, \
 						(Addr >> 8) & 0xFF, \
 							Addr & 0xFF);
+}
+
+void SetConVarSilent(const char[] ConVarName, const char[] Value)
+{
+	static Handle pConVar = INVALID_HANDLE;
+
+	static int oldFlags = 0;
+	static int newFlags = 0;
+
+	pConVar = FindConVar(ConVarName);
+
+	if (pConVar != INVALID_HANDLE)
+	{
+		oldFlags = GetConVarFlags(pConVar);
+		
+		newFlags = oldFlags;
+		
+		if (newFlags & FCVAR_NOTIFY)
+		{
+			newFlags &= ~FCVAR_NOTIFY;
+		}
+
+		SetConVarFlags(pConVar, newFlags);
+
+		ServerCommand("%s \"%s\";", ConVarName, Value);
+
+		ServerExecute();
+
+		SetConVarFlags(pConVar, oldFlags);
+	}
 }
 #endif
 
