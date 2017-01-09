@@ -40,14 +40,12 @@ char g_Address [ PLATFORM_MAX_PATH ];
 
 int GlovesTempID[ MAXPLAYERS + 1 ];
 
-bool g_bckSurf = false;
-
 public Plugin myinfo =
 {
 	name = "SM Valve Gloves",
 	author = "Franc1sco franug and hadesownage",
 	description = "",
-	version = "1.2",
+	version = "1.2.1",
 	url = "https://forums.alliedmods.net/showthread.php?t=291029"
 };
 
@@ -83,18 +81,6 @@ public void OnPluginStart() {
 	GetServerAddress(g_Address, sizeof(g_Address));
 	#endif
 }
-
-public void OnAllPluginsLoaded() {
-	
-    Handle PFind = FindPluginByFile("ckSurf.smx");
-
-    if(PFind != INVALID_HANDLE) 
-    {
-        if(GetPluginStatus(PFind) == Plugin_Running)
-        	g_bckSurf = true;
-        
-    }
-}  
 
 #if defined LICENSE
 public void OnMapStart ( ) {
@@ -863,12 +849,11 @@ stock void SetUserGloves ( client, glove, bool bSave ) {
 	
 		if ( IsPlayerAlive ( client ) && GameRules_GetProp("m_bWarmupPeriod") != 1) {
 			
-			if ( g_bckSurf )
-				SetEntPropString(client, Prop_Send, "m_szArmsModel", "");
 
 			int item = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
 			if (item == -1)return;
 			
+			SetEntPropString(client, Prop_Send, "m_szArmsModel", "");
 			stock_ClearGloveParams ( client );
 			SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", -1);
        	 		
