@@ -45,7 +45,7 @@ public Plugin:myinfo =
 	name = "SM Valve Gloves",
 	author = "Franc1sco franug and hadesownage",
 	description = "",
-	version = "1.0.7",
+	version = "1.0.8",
 	url = "https://forums.alliedmods.net/showthread.php?t=291029"
 };
 
@@ -1066,7 +1066,7 @@ stock void SetUserGloves ( client, glove, bool save ) {
 		            SetEntPropEnt(client, Prop_Send, "m_hMyWearables", GlovesTempID[client]);
 		            
 		            Handle ph1 = CreateDataPack();
-		            GiveGlovesTimer[client][1] = CreateTimer(2.0, AddItemTimer1, ph1);
+		            GiveGlovesTimer[client][1] = CreateDataTimer(2.0, AddItemTimer1, ph1);
 		            
 		            WritePackCell(ph1, EntIndexToEntRef(client));
 		            WritePackCell(ph1, EntIndexToEntRef(GlovesTempID[client]));
@@ -1074,7 +1074,7 @@ stock void SetUserGloves ( client, glove, bool save ) {
 		            WritePackCell(ph1, m_iItemIDLow );
 		            
 		            Handle ph2 = CreateDataPack();
-		            GiveGlovesTimer[client][0] = CreateTimer(0.0, AddItemTimer2, ph2);
+		            GiveGlovesTimer[client][0] = CreateDataTimer(0.0, AddItemTimer2, ph2);
 		            
 		            WritePackCell(ph2, EntIndexToEntRef(client));
 		            WritePackCell(ph2, EntIndexToEntRef(item));
