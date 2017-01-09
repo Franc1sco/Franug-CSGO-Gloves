@@ -37,15 +37,14 @@ int g_iGlove [ MAXPLAYERS + 1 ];
 char g_Address [ PLATFORM_MAX_PATH ];
 #endif
 
-Handle GiveGlovesTimer[33][2]; 
-int GlovesTempID[ 33 ];
+int GlovesTempID[ MAXPLAYERS + 1 ];
 
 public Plugin:myinfo =
 {
 	name = "SM Valve Gloves",
 	author = "Franc1sco franug and hadesownage",
 	description = "",
-	version = "1.0.8",
+	version = "1.0.9",
 	url = "https://forums.alliedmods.net/showthread.php?t=291029"
 };
 
@@ -101,7 +100,7 @@ public Action CommandSetArms ( int client, int args ) {
 		return Plugin_Handled;
 	#endif
 	
-	stock_ClearGloveParams(client)
+	//stock_ClearGloveParams(client)
 	
 	SetUserGloves ( client, g_iGlove [ client ], false );
 
@@ -134,7 +133,8 @@ public Action hookPlayerSpawn ( Handle event, const char [ ] name, bool dontBroa
 		return Plugin_Handled;
 	#endif
 	
-	stock_ClearGloveParams(client);
+	
+	//stock_ClearGloveParams(client);
 	//FakeClientCommandEx(client, "%s", "sm_setarms");
 	
 	CreateTimer ( 0.35, Event_SetGlove, GetClientUserId ( client ) );
@@ -806,11 +806,14 @@ stock void SetUserGloves ( client, glove, bool save ) {
 	
 		if ( IsPlayerAlive ( client ) && GameRules_GetProp("m_bWarmupPeriod") != 1) {
 			
-			stock_ClearGloveParams ( client );
+			
 			
 
 			int item = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
-       	 		if(item) SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", -1);
+			if (item == -1)return;
+			
+			stock_ClearGloveParams ( client );
+			SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", -1);
        	 		
 			int type;
 			int skin;
@@ -1065,20 +1068,20 @@ stock void SetUserGloves ( client, glove, bool save ) {
 		            
 		            SetEntPropEnt(client, Prop_Send, "m_hMyWearables", GlovesTempID[client]);
 		            
-		            Handle ph1 = CreateDataPack();
-		            GiveGlovesTimer[client][1] = CreateDataTimer(2.0, AddItemTimer1, ph1);
+		            DataPack ph1;
+		            CreateDataTimer(2.0, AddItemTimer1, ph1);
 		            
-		            WritePackCell(ph1, EntIndexToEntRef(client));
-		            WritePackCell(ph1, EntIndexToEntRef(GlovesTempID[client]));
-		            WritePackCell(ph1, m_iItemIDHigh );
-		            WritePackCell(ph1, m_iItemIDLow );
+		            ph1.WriteCell(EntIndexToEntRef(client));
+		            ph1.WriteCell(EntIndexToEntRef(GlovesTempID[client]));
+		            ph1.WriteCell(m_iItemIDHigh );
+		            ph1.WriteCell(m_iItemIDLow );
 		            
-		            Handle ph2 = CreateDataPack();
-		            GiveGlovesTimer[client][0] = CreateDataTimer(0.0, AddItemTimer2, ph2);
+		            DataPack ph2;
+		            CreateDataTimer(0.0, AddItemTimer2, ph2);
 		            
-		            WritePackCell(ph2, EntIndexToEntRef(client));
-		            WritePackCell(ph2, EntIndexToEntRef(item));
-		            WritePackCell(ph2, EntIndexToEntRef(GlovesTempID[client]));
+		            ph2.WriteCell(EntIndexToEntRef(client));
+		            ph2.WriteCell(EntIndexToEntRef(item));
+		            ph2.WriteCell(EntIndexToEntRef(GlovesTempID[client]));
 		            
 		     
 		        }
@@ -1112,6 +1115,8 @@ public Action AddItemTimer1(Handle timer, any ph)
     m_iItemIDHigh = ReadPackCell( ph );
     m_iItemIDLow = ReadPackCell( ph );
     
+    if (ent < 1 || ent != GlovesTempID[client])return;
+    
     if(IsValidEdict(ent))
     {
         SetEntProp(ent, Prop_Send, "m_iItemIDHigh", m_iItemIDHigh);
@@ -1120,9 +1125,7 @@ public Action AddItemTimer1(Handle timer, any ph)
     
     stock_KillWearable(client, ent); // comment this if want to use stock_TeleportPWearable
     
-    GiveGlovesTimer[client][0] = INVALID_HANDLE;
     
-    return Plugin_Stop;
 }
 
 public Action AddItemTimer2(Handle timer, any ph)
@@ -1137,13 +1140,13 @@ public Action AddItemTimer2(Handle timer, any ph)
     item = EntRefToEntIndex(ReadPackCell(ph));
     ent = EntRefToEntIndex(ReadPackCell(ph));
     
+    if (ent < 1 || ent != GlovesTempID[client])return;
+    
     if(IsValidated(client) && IsValidEdict(ent))
         SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", item);
     
     //stock_TeleportPWearable(client, ent); // comment this if want to use stock_KillWearable
-    GiveGlovesTimer[client][1] = INVALID_HANDLE;
-    
-    return Plugin_Stop;
+
 }
 
 stock IsValidClient ( client ) {
@@ -1221,17 +1224,6 @@ stock bool stock_KillWearable(int client, int ent)
 
 stock void stock_ClearGloveParams(int client)
 {
-    if(GiveGlovesTimer[client][0] != INVALID_HANDLE)
-    {
-        KillTimer(GiveGlovesTimer[client][0]);
-        GiveGlovesTimer[client][0] = INVALID_HANDLE;
-    }
-
-    if(GiveGlovesTimer[client][1] != INVALID_HANDLE)
-    {
-        KillTimer(GiveGlovesTimer[client][1]);
-        GiveGlovesTimer[client][1] = INVALID_HANDLE;
-    }
      
     stock_KillWearable(client, GlovesTempID[client]);
 }
