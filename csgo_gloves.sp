@@ -44,7 +44,7 @@ public Plugin:myinfo =
 	name = "SM Valve Gloves",
 	author = "Franc1sco franug and hadesownage",
 	description = "",
-	version = "1.0.9",
+	version = "1.1",
 	url = "https://forums.alliedmods.net/showthread.php?t=291029"
 };
 
@@ -188,11 +188,11 @@ public Action CommandGloves ( int client, int args ) {
 	if ( !IsValidClient ( client ) )
 		return Plugin_Handled;
 		
-	if ( !IsPlayerAlive ( client ) ) {
+	/*if ( !IsPlayerAlive ( client ) ) {
 		
 		PrintToChat( client, "%s You must be alive!", PREFIX );
 		return Plugin_Handled;
-	}
+	}*/
 		
 	#if defined VIP_ONLY
 	if ( !IsUserVip ( client ) ) {
