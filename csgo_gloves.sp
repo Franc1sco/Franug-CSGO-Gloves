@@ -6,6 +6,7 @@
 #define		PREFIX			"\x01★ \x04[Gloves]\x01"
 //#define	LICENSE			"ip"
 //#define	VIP_ONLY
+#define		DONT_CLOSE		// Don't close menu when you select.
 
 #if defined	VIP_ONLY
 #define		VIP_FLAG		Admin_Custom6
@@ -44,7 +45,7 @@ public Plugin:myinfo =
 	name = "SM Valve Gloves",
 	author = "Franc1sco franug and hadesownage",
 	description = "",
-	version = "1.1",
+	version = "1.0.9",
 	url = "https://forums.alliedmods.net/showthread.php?t=291029"
 };
 
@@ -83,7 +84,7 @@ public void OnPluginStart() {
 
 #if defined LICENSE
 public void OnMapStart ( ) {
-
+	
 	if ( !StrEqual( g_Address, LICENSE, false ) )
 		SetFailState("Invalid License.");
 		
@@ -187,12 +188,6 @@ public Action CommandGloves ( int client, int args ) {
 	
 	if ( !IsValidClient ( client ) )
 		return Plugin_Handled;
-		
-	/*if ( !IsPlayerAlive ( client ) ) {
-		
-		PrintToChat( client, "%s You must be alive!", PREFIX );
-		return Plugin_Handled;
-	}*/
 		
 	#if defined VIP_ONLY
 	if ( !IsUserVip ( client ) ) {
@@ -322,28 +317,37 @@ public Bloodhound_Handler(Handle menu, MenuAction action, int param1, int param2
 			if (StrEqual(item, "Bronzed"))
 			{
 				SetUserGloves ( param1, 1, true );
+				
+				#if defined DONT_CLOSE
 				BloodHound_Menu ( param1 );
+				#endif
 			
 				PrintToChat ( param1, "%s Your new glove is \x04BloodHound | Bronzed", PREFIX );
 			}
 			else if (StrEqual(item, "Charred"))
 			{
 				SetUserGloves ( param1, 2, true );
+				#if defined DONT_CLOSE
 				BloodHound_Menu ( param1 );
+				#endif
 				
 				PrintToChat ( param1, "%s Your new glove is \x04BloodHound | Charred", PREFIX );
 			}
 			else if (StrEqual(item, "Guerrilla"))
 			{
 				SetUserGloves ( param1, 3, true );
+				#if defined DONT_CLOSE
 				BloodHound_Menu ( param1 );
+				#endif
 				
 				PrintToChat ( param1, "%s Your new glove is \x04BloodHound | Guerrilla", PREFIX );
 			}
 			else if (StrEqual(item, "Snakebite"))
 			{
 				SetUserGloves ( param1, 4, true );
+				#if defined DONT_CLOSE
 				BloodHound_Menu ( param1 );
+				#endif
 				
 				PrintToChat ( param1, "%s Your new glove is \x04BloodHound | Snakebite", PREFIX );
 			}
@@ -409,28 +413,36 @@ public Driver_Handler(Handle menu, MenuAction action, int param1, int param2)
 			if (StrEqual(item, "Convoy"))
 			{
 				SetUserGloves ( param1, 5, true );
+				#if defined DONT_CLOSE
 				Driver_Menu ( param1 );
+				#endif
 			
 				PrintToChat ( param1, "%s Your new glove is \x04Driver | Convoy", PREFIX );
 			}
 			else if (StrEqual(item, "CrimsonWeave"))
 			{
 				SetUserGloves ( param1, 6, true );
+				#if defined DONT_CLOSE
 				Driver_Menu ( param1 );
+				#endif
 				
 				PrintToChat ( param1, "%s Your new glove is \x04Driver | Crimson Weave", PREFIX );
 			}
 			else if (StrEqual(item, "Diamondback"))
 			{
 				SetUserGloves ( param1, 7, true );
+				#if defined DONT_CLOSE
 				Driver_Menu ( param1 );
+				#endif
 				
 				PrintToChat ( param1, "%s Your new glove is \x04Driver | Diamondback", PREFIX );
 			}
 			else if (StrEqual(item, "LunarWeave"))
 			{
 				SetUserGloves ( param1, 8, true );
+				#if defined DONT_CLOSE
 				Driver_Menu ( param1 );
+				#endif
 				
 				PrintToChat ( param1, "%s Your new glove is \x04Driver | Lunar Weave", PREFIX );
 			}
@@ -496,28 +508,36 @@ public Hand_Handler(Handle menu, MenuAction action, int param1, int param2)
 			if (StrEqual(item, "Badlands"))
 			{
 				SetUserGloves ( param1, 9, true );
+				#if defined DONT_CLOSE
 				Hand_Menu ( param1 );
+				#endif
 			
 				PrintToChat ( param1, "%s Your new glove is \x04Hand Wraps | Badlands", PREFIX );
 			}
 			else if (StrEqual(item, "Leather"))
 			{
 				SetUserGloves ( param1, 10, true );
+				#if defined DONT_CLOSE
 				Hand_Menu ( param1 );
+				#endif
 				
 				PrintToChat ( param1, "%s Your new glove is \x04Hand Wraps | Leather", PREFIX );
 			}
 			else if (StrEqual(item, "Slaughter"))
 			{
 				SetUserGloves ( param1, 11, true );
+				#if defined DONT_CLOSE
 				Hand_Menu ( param1 );
+				#endif
 				
 				PrintToChat ( param1, "%s Your new glove is \x04Hand Wraps | Slaughter", PREFIX );
 			}
 			else if (StrEqual(item, "SpruceDDPAT"))
 			{
 				SetUserGloves ( param1, 12, true );
+				#if defined DONT_CLOSE
 				Hand_Menu ( param1 );
+				#endif
 				
 				PrintToChat ( param1, "%s Your new glove is \x04Hand Wraps | Spruce DDPAT", PREFIX );
 			}
@@ -583,28 +603,36 @@ public Moto_Handler(Handle menu, MenuAction action, int param1, int param2)
 			if (StrEqual(item, "Boom"))
 			{
 				SetUserGloves ( param1, 13, true );
+				#if defined DONT_CLOSE
 				Moto_Menu ( param1 );
+				#endif
 			
 				PrintToChat ( param1, "%s Your new glove is \x04Moto | Boom!", PREFIX );
 			}
 			else if (StrEqual(item, "CoolMint"))
 			{
 				SetUserGloves ( param1, 14, true );
+				#if defined DONT_CLOSE
 				Moto_Menu ( param1 );
+				#endif
 				
 				PrintToChat ( param1, "%s Your new glove is \x04Moto | Cool Mint", PREFIX );
 			}
 			else if (StrEqual(item, "Eclipse"))
 			{
 				SetUserGloves ( param1, 15, true );
+				#if defined DONT_CLOSE
 				Moto_Menu ( param1 );
+				#endif
 				
 				PrintToChat ( param1, "%s Your new glove is \x04Moto | Eclipse", PREFIX );
 			}
 			else if (StrEqual(item, "Spearmint"))
 			{
 				SetUserGloves ( param1, 16, true );
+				#if defined DONT_CLOSE
 				Moto_Menu ( param1 );
+				#endif
 				
 				PrintToChat ( param1, "%s Your new glove is \x04Moto | Spearmint", PREFIX );
 			}
@@ -670,28 +698,36 @@ public Specialist_Handler(Handle menu, MenuAction action, int param1, int param2
 			if (StrEqual(item, "CrimsonKimono"))
 			{
 				SetUserGloves ( param1, 17, true );
+				#if defined DONT_CLOSE
 				Specialist_Menu ( param1 );
+				#endif
 			
 				PrintToChat ( param1, "%s Your new glove is \x04Specialist | Crimson Kimono", PREFIX );
 			}
 			else if (StrEqual(item, "EmeraldWeb"))
 			{
 				SetUserGloves ( param1, 18, true );
+				#if defined DONT_CLOSE
 				Specialist_Menu ( param1 );
+				#endif
 				
 				PrintToChat ( param1, "%s Your new glove is \x04Specialist | Emerald Web", PREFIX );
 			}
 			else if (StrEqual(item, "ForestDDPAT"))
 			{
 				SetUserGloves ( param1, 19, true );
+				#if defined DONT_CLOSE
 				Specialist_Menu ( param1 );
+				#endif
 				
 				PrintToChat ( param1, "%s Your new glove is \x04Specialist | Forest DDPAT", PREFIX );
 			}
 			else if (StrEqual(item, "Foundation"))
 			{
 				SetUserGloves ( param1, 20, true );
+				#if defined DONT_CLOSE
 				Specialist_Menu ( param1 );
+				#endif
 				
 				PrintToChat ( param1, "%s Your new glove is \x04Specialist | Foundation", PREFIX );
 			}
@@ -757,28 +793,36 @@ public Sport_Handler(Handle menu, MenuAction action, int param1, int param2)
 			if (StrEqual(item, "Arid"))
 			{
 				SetUserGloves ( param1, 21, true );
+				#if defined DONT_CLOSE
 				Sport_Menu ( param1 );
+				#endif
 			
 				PrintToChat ( param1, "%s Your new glove is \x04Sport | Arid", PREFIX );
 			}
 			else if (StrEqual(item, "HedgeMaze"))
 			{
 				SetUserGloves ( param1, 22, true );
+				#if defined DONT_CLOSE
 				Sport_Menu ( param1 );
+				#endif
 				
 				PrintToChat ( param1, "%s Your new glove is \x04Sport | Hedge Maze", PREFIX );
 			}
 			else if (StrEqual(item, "PandorasBox"))
 			{
 				SetUserGloves ( param1, 23, true );
+				#if defined DONT_CLOSE
 				Sport_Menu ( param1 );
+				#endif
 				
 				PrintToChat ( param1, "%s Your new glove is \x04Sport | Pandora's Box", PREFIX );
 			}
 			else if (StrEqual(item, "Superconductor"))
 			{
 				SetUserGloves ( param1, 24, true );
+				#if defined DONT_CLOSE
 				Sport_Menu ( param1 );
+				#endif
 				
 				PrintToChat ( param1, "%s Your new glove is \x04Sport | Superconductor", PREFIX );
 			}
