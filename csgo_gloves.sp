@@ -33,11 +33,6 @@ Handle g_pSave;
 
 int g_iGlove [ MAXPLAYERS + 1 ];
 
-int g_iGlovesEntity[MAXPLAYERS + 1];
-
-#define timer_loop 3
-Handle htimer[MAXPLAYERS + 1][timer_loop];
-
 #if defined LICENSE
 char g_Address [ PLATFORM_MAX_PATH ];
 #endif
@@ -89,7 +84,7 @@ public void OnPluginStart() {
 
 #if defined LICENSE
 public void OnMapStart ( ) {
-	
+
 	if ( !StrEqual( g_Address, LICENSE, false ) )
 		SetFailState("Invalid License.");
 		
@@ -109,6 +104,7 @@ public Action CommandSetArms ( int client, int args ) {
 	stock_ClearGloveParams(client)
 	
 	SetUserGloves ( client, g_iGlove [ client ], false );
+
 	return Plugin_Handled;
 	
 }
@@ -139,35 +135,22 @@ public Action hookPlayerSpawn ( Handle event, const char [ ] name, bool dontBroa
 	#endif
 	
 	stock_ClearGloveParams(client);
-	FakeClientCommandEx(client, "%s", "sm_setarms");
+	//FakeClientCommandEx(client, "%s", "sm_setarms");
+	
+	CreateTimer ( 0.35, Event_SetGlove, GetClientUserId ( client ) );
 
-	/*
-	if(htimer[client] != INVALID_HANDLE)
-	{
-		KillTimer(htimer[client]);
-		
-		htimer[client] = INVALID_HANDLE;
-	}
-	htimer[client] = CreateTimer(1.5, Delay, client);*/
-	
-	//if (!g_iGlove[client])return;
-	
-	//SetUserGloves ( client, g_iGlove [ client ], false );
-	
+
 	return Plugin_Continue;
 }
 
-public Action Delay ( Handle timer, any client) {
+public Action Event_SetGlove ( Handle timer, any user_index ) {
 
-	for (new i = 0; i < timer_loop; i++)
-		if(htimer[client][i] != INVALID_HANDLE)
-		{
-			//PrintToChat(client, "done%i", i);
-			htimer[client][i] = INVALID_HANDLE;
-			break;
-		}
-	
-	FakeClientCommand(client, "sm_setarms" );
+	int client = GetClientOfUserId ( user_index );
+	if ( !client || !IsValidClient ( client ) || !g_iGlove [ client ] )
+		return;
+
+	FakeClientCommandEx(client, "%s", "sm_setarms");
+
 }
 
 public Action hookPlayerDeath ( Handle event, const char [ ] name, bool dontBroadcast ) {
@@ -178,18 +161,6 @@ public Action hookPlayerDeath ( Handle event, const char [ ] name, bool dontBroa
 	
 	return Plugin_Continue;
 }
-
-/*
-public Action Delay(Handle timer, any client)
-{
-	htimer[client] = INVALID_HANDLE;
-	//FakeClientCommand(client, "sm_gloves");
-	
-	//FakeClientCommand(client, "menuselect 1");
-	//FakeClientCommand(client, "menuselect 1");
-	PrintToChat(client, "done");
-	SetUserGloves ( client, g_iGlove [ client ], true );
-}*/
 
 public void OnClientCookiesCached ( int Client ) {
 
@@ -835,17 +806,17 @@ stock void SetUserGloves ( client, glove, bool save ) {
 	
 		if ( IsPlayerAlive ( client ) && GameRules_GetProp("m_bWarmupPeriod") != 1) {
 			
-			RemoveEntityGloves(client);
-			//ChangePlayerWeaponSlot ( client, 2 );
+			stock_ClearGloveParams ( client );
+			
+
 			int item = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
-			if (item == -1)return;
+       	 		if(item) SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", -1);
+       	 		
 			int type;
 			int skin;
 			
 			char model [ PLATFORM_MAX_PATH ];
-	        
-		        SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", -1);
-		        
+
 		        GlovesTempID[client] = GivePlayerItem(client, "wearable_item");
 		        SetEntityRenderMode(GlovesTempID[client], RENDER_NONE);
 		        
@@ -1173,15 +1144,6 @@ public Action AddItemTimer2(Handle timer, any ph)
     GiveGlovesTimer[client][1] = INVALID_HANDLE;
     
     return Plugin_Stop;
-}
-
-RemoveEntityGloves(client)
-{
-	int entity = EntRefToEntIndex(g_iGlovesEntity[client]);	
-	if (entity != INVALID_ENT_REFERENCE && entity != INVALID_ENT_REFERENCE && entity != 0)
-	{
-        AcceptEntityInput(entity, "kill");
-	}
 }
 
 stock IsValidClient ( client ) {
