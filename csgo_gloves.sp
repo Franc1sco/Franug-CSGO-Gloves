@@ -45,7 +45,7 @@ public Plugin myinfo =
 	name = "SM Valve Gloves",
 	author = "Franc1sco franug and hadesownage",
 	description = "",
-	version = "1.2.1",
+	version = "1.2.2",
 	url = "https://forums.alliedmods.net/showthread.php?t=291029"
 };
 
@@ -1165,7 +1165,7 @@ public Action AddItemTimer1(Handle timer, any ph)
         SetEntProp(ent, Prop_Send, "m_iItemIDLow", m_iItemIDLow);
     }
     
-    stock_KillWearable(client, ent); // comment this if want to use stock_TeleportPWearable
+    //stock_KillWearable(client, ent); // comment this if want to use stock_TeleportPWearable
     
     
 }
