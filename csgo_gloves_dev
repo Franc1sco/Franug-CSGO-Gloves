@@ -2,53 +2,43 @@
 #include <sdktools>
 #include <cstrike>
 #include <clientprefs>
+#include <csgowearables>
 
 #define		PREFIX			"\x01★ \x04[Gloves]\x01"
-//#define	LICENSE			"ip"
-//#define	VIP_ONLY
-#define		DONT_CLOSE		// Don't close menu when you select.
-
-#if defined	VIP_ONLY
-#define		VIP_FLAG		Admin_Custom6
-#endif
+#define		DONT_CLOSE
 
 #define 	BLOODHOUND 		5027
-#define		BLOODHOUND_MODEL	"models/weapons/v_models/arms/glove_bloodhound/v_glove_bloodhound.mdl"
+#define		BLOODHOUND_MODEL	"models/weapons/w_models/arms/w_glove_bloodhound.mdl"
 
 #define		SPORT			5030
-#define		SPORT_MODEL		"models/weapons/v_models/arms/glove_sporty/v_glove_sporty.mdl"
+#define		SPORT_MODEL		"models/weapons/w_models/arms/w_glove_sporty.mdl"
 
 #define		DRIVER			5031
-#define		DRIVER_MODEL		"models/weapons/v_models/arms/glove_slick/glove_slick.mdl"
+#define		DRIVER_MODEL		"models/weapons/w_models/arms/w_glove_slick.mdl"
 
 #define 	HAND			5032
-#define		HAND_MODEL		"models/weapons/v_models/arms/glove_handwrap_leathery/glove_handwrap_leathery.mdl"
+#define		HAND_MODEL		"models/weapons/w_models/arms/w_glove_handwrap_leathery.mdl"
 
 #define		MOTOCYCLE		5033
-#define		MOTOCYCLE_MODEL		"models/weapons/v_models/arms/glove_motorcycle/glove_motorcycle.mdl"
+#define		MOTOCYCLE_MODEL		"models/weapons/w_models/arms/w_glove_motorcycle.mdl"
 
 #define		SPECIALIST		5034
-#define		SPECIALIST_MODEL	"models/weapons/v_models/arms/glove_specialist/glove_specialist.mdl"
+#define		SPECIALIST_MODEL	"models/weapons/w_models/arms/w_glove_specialist.mdl"
 
 Handle g_pSave;
-
 int g_iGlove [ MAXPLAYERS + 1 ];
-
 #if defined LICENSE
 char g_Address [ PLATFORM_MAX_PATH ];
 #endif
-
 int GlovesTempID[ MAXPLAYERS + 1 ];
-
 public Plugin myinfo =
 {
 	name = "SM Valve Gloves",
-	author = "Franc1sco franug and hadesownage",
+	author = "Franc1sco franug, hadesownage, lay295(Mr.Derp)",
 	description = "",
-	version = "1.2.2",
+	version = "1.2.1",
 	url = "https://forums.alliedmods.net/showthread.php?t=291029"
 };
-
 public void OnPluginStart() {
     	
 	RegConsoleCmd ( "sm_glove", CommandGloves );
@@ -61,11 +51,13 @@ public void OnPluginStart() {
 	RegConsoleCmd ( "sm_manusi", CommandGloves );
     	
 	RegConsoleCmd ( "sm_setarms", CommandSetArms );
+	
+	RegConsoleCmd("sm_countgloves", Cmd_CountGloves, "count all wearable entities");
     
 	HookEvent ( "player_spawn", hookPlayerSpawn );
 	HookEvent ( "player_death", hookPlayerDeath );
 	
-	//HookEvent ( "round_start", EventRoundStart );
+	HookEvent ( "round_end", EventRoundEnd , EventHookMode_Pre);
     	
 	g_pSave = RegClientCookie ( "ValveGloves", "Store Valve gloves", CookieAccess_Private );
     	
@@ -80,6 +72,17 @@ public void OnPluginStart() {
 	#if defined LICENSE
 	GetServerAddress(g_Address, sizeof(g_Address));
 	#endif
+}
+
+public Action Cmd_CountGloves(int client, int args)
+{
+	int entity = -1;
+	int count = 0;
+	while ((entity = FindEntityByClassname(entity, "wearable_item")) != INVALID_ENT_REFERENCE)
+	{
+		count++;
+	}
+	PrintToChatAll("%i", count);
 }
 
 #if defined LICENSE
@@ -103,26 +106,26 @@ public Action CommandSetArms ( int client, int args ) {
 	//stock_ClearGloveParams(client)
 	
 	SetUserGloves ( client, g_iGlove [ client ], false );
-
 	return Plugin_Handled;
 	
 }
-
-public Action EventRoundStart ( Handle event, const char [ ] name, bool dontBroadcast ) {
-
+public Action EventRoundEnd ( Handle event, const char [ ] name, bool dontBroadcast ) {
 	for ( new k = 1; k <= MaxClients; k++ ) {
-
-		if ( !IsValidClient ( k ) || !IsPlayerAlive( k ))
-			continue;
-			
-		FakeClientCommandEx(k, "%s", "sm_setarms");
-		
+		if (IsClientConnected(k) && !IsFakeClient(k))
+		{
+			if (IsValidEntity(GlovesTempID[k]) && GlovesTempID[k] != 0 && stock_IsEntAsWearable(GlovesTempID[k]))
+			{
+				CSGO_RemovePlayerWearable(k, GlovesTempID[k]);
+			}
+		}
 	}
-	
+	int entity = -1;
+	while ((entity = FindEntityByClassname(entity, "wearable_item")) != INVALID_ENT_REFERENCE)
+	{
+		AcceptEntityInput(entity, "Kill");
+	}
 }
-
 public Action hookPlayerSpawn ( Handle event, const char [ ] name, bool dontBroadcast ) {
-
 	int client = GetClientOfUserId ( GetEventInt ( event, "userid" ) );
 	
 	#if defined VIP_ONLY
@@ -138,49 +141,30 @@ public Action hookPlayerSpawn ( Handle event, const char [ ] name, bool dontBroa
 	//FakeClientCommandEx(client, "%s", "sm_setarms");
 	
 	CreateTimer ( 0.35, Event_SetGlove, GetClientUserId ( client ) );
-
-
 	return Plugin_Continue;
 }
-
 public Action Event_SetGlove ( Handle timer, any user_index ) {
-
 	int client = GetClientOfUserId ( user_index );
 	if ( !client || !IsValidClient ( client ) || !g_iGlove [ client ] )
 		return;
-
 	FakeClientCommandEx(client, "%s", "sm_setarms");
-
-}
-
-public Action hookPlayerDeath ( Handle event, const char [ ] name, bool dontBroadcast ) {
-
-	int client = GetClientOfUserId ( GetEventInt ( event, "userid" ) );
-
-	stock_ClearGloveParams(client);
-	
-	return Plugin_Continue;
 }
 
 public void OnClientCookiesCached ( int Client ) {
-
 	char Data [ 32 ];
-
 	GetClientCookie ( Client, g_pSave, Data, sizeof ( Data ) );
-
 	g_iGlove [ Client ] = StringToInt ( Data );
-
 }
 
-public void OnClientPutInServer( int client ) {
-	stock_ClearGloveParams(client);
-}
-
-public void OnClientDisconnect( int client ) {
+public Action hookPlayerDeath ( Handle event, const char [ ] name, bool dontBroadcast ) {
+	int client = GetClientOfUserId ( GetEventInt ( event, "userid" ) );
+	if (IsValidEntity(GlovesTempID[client]) && GlovesTempID[client] != 0 && stock_IsEntAsWearable(GlovesTempID[client]))
+	{
+		CSGO_RemovePlayerWearable(client, GlovesTempID[client]);
+		AcceptEntityInput(GlovesTempID[client], "Kill");
+	}
 	
-	stock_ClearGloveParams(client);
-	
-	
+	return Plugin_Continue;
 }
 
 public Action CommandGloves ( int client, int args ) {
@@ -198,7 +182,6 @@ public Action CommandGloves ( int client, int args ) {
 	
 	Handle menu = CreateMenu(GlovesMenu_Handler, MenuAction_Select | MenuAction_End);
 	SetMenuTitle(menu, "★ Gloves Menu ★");
-
 	if(g_iGlove [ client ] < 1) AddMenuItem(menu, "default", "Default Gloves", ITEMDRAW_DISABLED);
 	else AddMenuItem(menu, "default", "Default Gloves");
 	
@@ -215,7 +198,6 @@ public Action CommandGloves ( int client, int args ) {
 	return Plugin_Handled;
 	
 }
-
 public int GlovesMenu_Handler(Handle menu, MenuAction action, int param1, int param2)
 {
 	switch (action)
@@ -223,7 +205,6 @@ public int GlovesMenu_Handler(Handle menu, MenuAction action, int param1, int pa
 		case MenuAction_Select:
 		{
 			//param1 is client, param2 is item
-
 			char item[64];
 			GetMenuItem(menu, param2, item, sizeof(item));
 			if (StrEqual(item, "default"))
@@ -266,12 +247,9 @@ public int GlovesMenu_Handler(Handle menu, MenuAction action, int param1, int pa
 		{
 			//param1 is MenuEnd reason, if canceled param2 is MenuCancel reason
 			CloseHandle(menu);
-
 		}
-
 	}
 }
-
 public void BloodHound_Menu ( client ) {
 	
 	Handle menu = CreateMenu(Bloodhound_Handler, MenuAction_Select | MenuAction_End);
@@ -301,7 +279,6 @@ public void BloodHound_Menu ( client ) {
 	DisplayMenu(menu, client, MENU_TIME_FOREVER);
 				
 }
-
 public Bloodhound_Handler(Handle menu, MenuAction action, int param1, int param2)
 {
 	switch (action)
@@ -309,10 +286,8 @@ public Bloodhound_Handler(Handle menu, MenuAction action, int param1, int param2
 		case MenuAction_Select:
 		{
 			//param1 is client, param2 is item
-
 			char item[64];
 			GetMenuItem(menu, param2, item, sizeof(item));
-
 			if (StrEqual(item, "Bronzed"))
 			{
 				SetUserGloves ( param1, 1, true );
@@ -362,12 +337,9 @@ public Bloodhound_Handler(Handle menu, MenuAction action, int param1, int param2
 		{
 			//param1 is MenuEnd reason, if canceled param2 is MenuCancel reason
 			CloseHandle(menu);
-
 		}
-
 	}
 }
-
 public void Driver_Menu ( client ) {
 	
 	Handle menu = CreateMenu(Driver_Handler, MenuAction_Select | MenuAction_End);
@@ -397,7 +369,6 @@ public void Driver_Menu ( client ) {
 	DisplayMenu(menu, client, MENU_TIME_FOREVER);
 				
 }
-
 public Driver_Handler(Handle menu, MenuAction action, int param1, int param2)
 {
 	switch (action)
@@ -405,10 +376,8 @@ public Driver_Handler(Handle menu, MenuAction action, int param1, int param2)
 		case MenuAction_Select:
 		{
 			//param1 is client, param2 is item
-
 			char item[64];
 			GetMenuItem(menu, param2, item, sizeof(item));
-
 			if (StrEqual(item, "Convoy"))
 			{
 				SetUserGloves ( param1, 5, true );
@@ -457,12 +426,9 @@ public Driver_Handler(Handle menu, MenuAction action, int param1, int param2)
 		{
 			//param1 is MenuEnd reason, if canceled param2 is MenuCancel reason
 			CloseHandle(menu);
-
 		}
-
 	}
 }
-
 public void Hand_Menu ( client ) {
 	
 	Handle menu = CreateMenu(Hand_Handler, MenuAction_Select | MenuAction_End);
@@ -492,7 +458,6 @@ public void Hand_Menu ( client ) {
 	DisplayMenu(menu, client, MENU_TIME_FOREVER);
 				
 }
-
 public Hand_Handler(Handle menu, MenuAction action, int param1, int param2)
 {
 	switch (action)
@@ -500,10 +465,8 @@ public Hand_Handler(Handle menu, MenuAction action, int param1, int param2)
 		case MenuAction_Select:
 		{
 			//param1 is client, param2 is item
-
 			char item[64];
 			GetMenuItem(menu, param2, item, sizeof(item));
-
 			if (StrEqual(item, "Badlands"))
 			{
 				SetUserGloves ( param1, 9, true );
@@ -552,12 +515,9 @@ public Hand_Handler(Handle menu, MenuAction action, int param1, int param2)
 		{
 			//param1 is MenuEnd reason, if canceled param2 is MenuCancel reason
 			CloseHandle(menu);
-
 		}
-
 	}
 }
-
 public void Moto_Menu ( client ) {
 	
 	Handle menu = CreateMenu(Moto_Handler, MenuAction_Select | MenuAction_End);
@@ -587,7 +547,6 @@ public void Moto_Menu ( client ) {
 	DisplayMenu(menu, client, MENU_TIME_FOREVER);
 				
 }
-
 public Moto_Handler(Handle menu, MenuAction action, int param1, int param2)
 {
 	switch (action)
@@ -595,10 +554,8 @@ public Moto_Handler(Handle menu, MenuAction action, int param1, int param2)
 		case MenuAction_Select:
 		{
 			//param1 is client, param2 is item
-
 			char item[64];
 			GetMenuItem(menu, param2, item, sizeof(item));
-
 			if (StrEqual(item, "Boom"))
 			{
 				SetUserGloves ( param1, 13, true );
@@ -647,12 +604,9 @@ public Moto_Handler(Handle menu, MenuAction action, int param1, int param2)
 		{
 			//param1 is MenuEnd reason, if canceled param2 is MenuCancel reason
 			CloseHandle(menu);
-
 		}
-
 	}
 }
-
 public void Specialist_Menu ( client ) {
 	
 	Handle menu = CreateMenu(Specialist_Handler, MenuAction_Select | MenuAction_End);
@@ -682,7 +636,6 @@ public void Specialist_Menu ( client ) {
 	DisplayMenu(menu, client, MENU_TIME_FOREVER);
 				
 }
-
 public Specialist_Handler(Handle menu, MenuAction action, int param1, int param2)
 {
 	switch (action)
@@ -690,10 +643,8 @@ public Specialist_Handler(Handle menu, MenuAction action, int param1, int param2
 		case MenuAction_Select:
 		{
 			//param1 is client, param2 is item
-
 			char item[64];
 			GetMenuItem(menu, param2, item, sizeof(item));
-
 			if (StrEqual(item, "CrimsonKimono"))
 			{
 				SetUserGloves ( param1, 17, true );
@@ -742,12 +693,9 @@ public Specialist_Handler(Handle menu, MenuAction action, int param1, int param2
 		{
 			//param1 is MenuEnd reason, if canceled param2 is MenuCancel reason
 			CloseHandle(menu);
-
 		}
-
 	}
 }
-
 public void Sport_Menu ( client ) {
 	
 	Handle menu = CreateMenu(Sport_Handler, MenuAction_Select | MenuAction_End);
@@ -777,7 +725,6 @@ public void Sport_Menu ( client ) {
 	DisplayMenu(menu, client, MENU_TIME_FOREVER);
 				
 }
-
 public Sport_Handler(Handle menu, MenuAction action, int param1, int param2)
 {
 	switch (action)
@@ -785,10 +732,8 @@ public Sport_Handler(Handle menu, MenuAction action, int param1, int param2)
 		case MenuAction_Select:
 		{
 			//param1 is client, param2 is item
-
 			char item[64];
 			GetMenuItem(menu, param2, item, sizeof(item));
-
 			if (StrEqual(item, "Arid"))
 			{
 				SetUserGloves ( param1, 21, true );
@@ -837,31 +782,31 @@ public Sport_Handler(Handle menu, MenuAction action, int param1, int param2)
 		{
 			//param1 is MenuEnd reason, if canceled param2 is MenuCancel reason
 			CloseHandle(menu);
-
 		}
-
 	}
 }
-
 stock void SetUserGloves ( client, glove, bool bSave ) {
 	
 	if ( IsValidClient ( client ) && glove > 0 ) {
 	
-		if ( IsPlayerAlive ( client ) && GameRules_GetProp("m_bWarmupPeriod") != 1) {
+		if ( IsPlayerAlive ( client )) {
 			
-
 			int item = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
 			if (item == -1)return;
 			
 			SetEntPropString(client, Prop_Send, "m_szArmsModel", "");
-			stock_ClearGloveParams ( client );
+			if (IsValidEntity(GlovesTempID[client]) && GlovesTempID[client] != 0 && stock_IsEntAsWearable(GlovesTempID[client]))
+			{
+				CSGO_RemovePlayerWearable(client, GlovesTempID[client]);
+				AcceptEntityInput(GlovesTempID[client], "Kill");
+			}
+			
 			SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", -1);
        	 		
 			int type;
 			int skin;
 			
 			char model [ PLATFORM_MAX_PATH ];
-
 		        GlovesTempID[client] = GivePlayerItem(client, "wearable_item");
 		        SetEntityRenderMode(GlovesTempID[client], RENDER_NONE);
 		        
@@ -1107,6 +1052,7 @@ stock void SetUserGloves ( client, glove, bool bSave ) {
 		            
 		            SetEntProp(GlovesTempID[client], Prop_Send, "m_nModelIndex", PrecacheModel(model));
 		            SetEntityModel(GlovesTempID[client], model);
+		            CSGO_EquipPlayerWearable(client, GlovesTempID[client]);
 		            
 		            SetEntPropEnt(client, Prop_Send, "m_hMyWearables", GlovesTempID[client]);
 		            
@@ -1142,16 +1088,13 @@ stock void SetUserGloves ( client, glove, bool bSave ) {
 	}
 	
 }
-
 public Action AddItemTimer1(Handle timer, any ph)
 {
     int client;
     int ent;
     int m_iItemIDHigh;
     int m_iItemIDLow;
-
     ResetPack(ph);
-
     client = EntRefToEntIndex(ReadPackCell(ph));
     ent = EntRefToEntIndex(ReadPackCell(ph));
     m_iItemIDHigh = ReadPackCell( ph );
@@ -1166,8 +1109,22 @@ public Action AddItemTimer1(Handle timer, any ph)
     }
     
     //stock_KillWearable(client, ent); // comment this if want to use stock_TeleportPWearable
+    stock_TeleportWearable(client, GlovesTempID [ client ] );
     
     
+}
+
+stock void stock_TeleportWearable(int client, int ent)
+{
+    if(IsValidEdict(ent))
+    {
+        if(stock_IsEntAsWearable(ent))
+        {
+            float origin[3] = 0.0;
+            TeleportEntity(ent, origin, NULL_VECTOR, NULL_VECTOR);
+             SetEntityRenderMode(ent, RENDER_NORMAL);
+        }
+    }
 }
 
 public Action AddItemTimer2(Handle timer, any ph)
@@ -1177,7 +1134,6 @@ public Action AddItemTimer2(Handle timer, any ph)
     int ent;
     
     ResetPack(ph);
-
     client = EntRefToEntIndex(ReadPackCell(ph));
     item = EntRefToEntIndex(ReadPackCell(ph));
     ent = EntRefToEntIndex(ReadPackCell(ph));
@@ -1188,35 +1144,24 @@ public Action AddItemTimer2(Handle timer, any ph)
         SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", item);
     
     //stock_TeleportPWearable(client, ent); // comment this if want to use stock_KillWearable
-
 }
-
 stock IsValidClient ( client ) {
-
 	if ( !( 1 <= client <= MaxClients ) || !IsClientInGame ( client ) || IsFakeClient( client ) )
 		return false;
-
 	return true;
 }
-
 #if defined VIP_ONLY
 bool IsUserVip ( int client ) {
-
 	if ( GetAdminFlag ( GetUserAdmin ( client ), VIP_FLAG )  )
 		return true;
-
 	return false;
-
 }
 #endif
-
 #if defined LICENSE
 void GetServerAddress(char[] Buffer, int Size)
 {
 	static int Addr = 0;
-
 	Addr = GetConVarInt(FindConVar("hostip"));
-
 	FormatEx(Buffer, Size, "%d.%d.%d.%d", \
 				(Addr >> 24) & 0xFF, \
 					(Addr >> 16) & 0xFF, \
@@ -1224,7 +1169,6 @@ void GetServerAddress(char[] Buffer, int Size)
 							Addr & 0xFF);
 }
 #endif
-
 stock bool IsValidated( client )
 {
     #define is_valid_player(%1) (1 <= %1 <= 32)
@@ -1233,10 +1177,8 @@ stock bool IsValidated( client )
     if( !IsClientConnected ( client ) ) return false;   
     if( IsFakeClient ( client ) ) return false;
     if( !IsClientInGame ( client ) ) return false;
-
     return true;
 }
-
 stock bool stock_IsEntAsWearable(int ent)
 {
     if(!IsValidEdict(ent)) return false;
@@ -1245,26 +1187,4 @@ stock bool stock_IsEntAsWearable(int ent)
     if(StrContains(weaponclass, "wearable", false) == -1) return false;
     
     return true;
-}
-
-stock bool stock_KillWearable(int client, int ent)
-{
-    if(!IsValidEdict(ent)) return false;
-    if(!stock_IsEntAsWearable(ent)) return false;
-    
-
-    if(AcceptEntityInput(ent, "Kill"))
-    {
-        GlovesTempID[client] = -1;
-
-
-        return true;
-    }
-    
-    return false;
-}
-
-stock void stock_ClearGloveParams(int client)
-{
-    stock_KillWearable(client, GlovesTempID[client]);
 }
