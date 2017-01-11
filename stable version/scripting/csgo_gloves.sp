@@ -3,6 +3,9 @@
 #include <cstrike>
 #include <clientprefs>
 
+
+#define VERSION "1.2.2"
+
 #define		PREFIX			"\x01★ \x04[Gloves]\x01"
 //#define	LICENSE			"ip"
 //#define	VIP_ONLY
@@ -45,7 +48,7 @@ public Plugin myinfo =
 	name = "SM Valve Gloves",
 	author = "Franc1sco franug and hadesownage",
 	description = "",
-	version = "1.2.2",
+	version = VERSION,
 	url = "https://forums.alliedmods.net/showthread.php?t=291029"
 };
 

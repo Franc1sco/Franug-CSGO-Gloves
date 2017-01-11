@@ -1,0 +1,22 @@
+"Games"
+{
+	"csgo"
+	{
+		"Offsets"
+		{
+			"CBaseCombatCharacter::EquipWearable"
+			{
+				"windows"	"333"
+				"linux"		"334"
+				"mac"		"334"
+			}
+
+			"CBaseCombatCharacter::RemoveWearable"
+			{
+				"windows"	"334"
+				"linux"		"335"
+				"mac"		"335"
+			}
+		}
+	}
+}

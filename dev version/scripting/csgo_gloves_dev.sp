@@ -4,6 +4,8 @@
 #include <clientprefs>
 #include <csgowearables>
 
+#define VERSION "1.2.1 Dev"
+
 #define		PREFIX			"\x01★ \x04[Gloves]\x01"
 #define		DONT_CLOSE
 
@@ -1120,9 +1122,9 @@ stock void stock_TeleportWearable(int client, int ent)
     {
         if(stock_IsEntAsWearable(ent))
         {
-            float origin[3] = 0.0;
-            TeleportEntity(ent, origin, NULL_VECTOR, NULL_VECTOR);
-             SetEntityRenderMode(ent, RENDER_NORMAL);
+			float origin[3] = 0.0;
+			TeleportEntity(ent, origin, NULL_VECTOR, NULL_VECTOR);
+			SetEntityRenderMode(ent, RENDER_NORMAL);
         }
     }
 }
