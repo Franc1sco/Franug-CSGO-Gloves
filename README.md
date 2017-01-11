@@ -13,4 +13,4 @@ sm_manusi
 
 ## For report bugs or request features just open a issue here https://gitlab.com/Franc1sco/CSGO-Gloves/issues
 
-## Remember to follow the rules listen here https://github.com/Franc1sco/Franug-PRIVATE-PLUGINS
+## Remember to follow the rules listed here https://github.com/Franc1sco/Franug-PRIVATE-PLUGINS
