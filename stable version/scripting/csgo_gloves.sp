@@ -49,7 +49,7 @@ public Plugin myinfo =
 	author = "Franc1sco franug and hadesownage",
 	description = "",
 	version = VERSION,
-	url = "https://forums.alliedmods.net/showthread.php?t=291029"
+	url = ""
 };
 
 public void OnPluginStart() {

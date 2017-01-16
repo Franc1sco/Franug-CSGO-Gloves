@@ -30,8 +30,8 @@ public Plugin myinfo =
 	name = "SM Valve Gloves",
 	author = "Franc1sco franug and hadesownage",
 	description = "",
-	version = "1.2.3",
-	url = "https://forums.alliedmods.net/showthread.php?t=291029"
+	version = "1.2.3-dev",
+	url = ""
 };
 
 public void OnPluginStart() {
