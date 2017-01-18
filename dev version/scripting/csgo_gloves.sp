@@ -30,7 +30,7 @@ public Plugin myinfo =
 	name = "SM Valve Gloves",
 	author = "Franc1sco franug and hadesownage",
 	description = "",
-	version = "1.2.4-dev",
+	version = "1.2.5-dev",
 	url = ""
 };
 
@@ -175,6 +175,7 @@ public int ValveGlovesMenu_Handler(Handle menu, MenuAction action, int param1, i
 			
 				PrintToChat ( param1, "%s You have default gloves now.", PREFIX );
 				SetUserGloves(param1, 0, false);
+				CommandGloves(param1, 0);
 				
 			}
 			if (StrEqual(item, "Bloodhound"))
@@ -901,7 +902,7 @@ public Sport_Handler(Handle menu, MenuAction action, int param1, int param2)
 
 stock void SetUserGloves ( client, glove, bool bSave ) {
 	
-	if ( IsValidClient ( client ) && glove > 0 ) {
+	if ( IsValidClient ( client )) {
 	
 		if ( IsPlayerAlive ( client ) ) {
 
@@ -1087,8 +1088,7 @@ stock void SetUserGloves ( client, glove, bool bSave ) {
 		        	}
 		        	
 		        }
-		        
-		        // (c) diller110
+
 			int current = GetEntPropEnt(client, Prop_Send, "m_hMyWearables");
 			if(current != -1 && IsWearable(current)) {
 				
