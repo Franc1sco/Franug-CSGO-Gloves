@@ -30,7 +30,7 @@ public Plugin myinfo =
 	name = "SM Valve Gloves",
 	author = "Franc1sco franug and hadesownage",
 	description = "",
-	version = "1.2.3-dev",
+	version = "1.2.4-dev",
 	url = ""
 };
 
@@ -49,7 +49,7 @@ public void OnPluginStart() {
 	RegConsoleCmd ( "sm_manusi", CommandGloves );
  
 	HookEvent ( "player_spawn", hookPlayerSpawn );
-	HookEvent ( "player_death", hookPlayerDeath );
+	//HookEvent ( "player_death", hookPlayerDeath );
 
 	g_cvVipOnly = CreateConVar ( "vip_only", "0", "Set gloves only for VIPs", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
 	g_cvVipFlags = CreateConVar ( "vip_flags", "t", "Set gloves only for VIPs", FCVAR_NOTIFY );
@@ -73,21 +73,22 @@ public Action hookPlayerSpawn ( Handle event, const char [ ] name, bool dontBroa
 	if ( GetConVarInt ( g_cvVipOnly ) ) {
 		
 		if ( !IsValidClient ( client ) || !g_iGlove [ client ] || !IsUserVip ( client ) )
-			return Plugin_Handled;
+			return;
 			
 	}
 	
-	else {
-		if ( !IsValidClient ( client ) || !g_iGlove [ client ] )
-			return Plugin_Handled;
+	if(!IsFakeClient(client) && GetEntProp(client, Prop_Send, "m_bIsControllingBot") != 1) {
+
+		int wear = GetEntPropEnt(client, Prop_Send, "m_hMyWearables");
+		if(wear == -1) {
+			SetUserGloves ( client, g_iGlove [ client ], false );
+		} else {
+			SetEntProp(client, Prop_Send, "m_nBody", 1);
+		}
 	}
-		
-	if ( g_iGlove [ client ] <= VALVE_TOTAL_GLOVES )
-		SetUserGloves ( client, g_iGlove [ client ], false );
-			
-	return Plugin_Continue;
 }
 
+/*
 public Action hookPlayerDeath ( Handle event, const char [ ] name, bool dontBroadcast ) {
 
 	int client = GetClientOfUserId ( GetEventInt ( event, "userid" ) );
@@ -98,7 +99,7 @@ public Action hookPlayerDeath ( Handle event, const char [ ] name, bool dontBroa
 		SetEntProp(client, Prop_Send, "m_nBody", 0);
 	
 	return Plugin_Continue;
-}
+}*/
 
 public void OnClientCookiesCached ( int Client ) {
 
@@ -172,8 +173,9 @@ public int ValveGlovesMenu_Handler(Handle menu, MenuAction action, int param1, i
 				IntToString ( g_iGlove [ param1 ], Data, sizeof ( Data ) );
 				SetClientCookie ( param1, g_pSave, Data );
 			
-				PrintToChat ( param1, "%s You will have default gloves in your next spawn.", PREFIX );
-				CommandGloves(param1, 0);
+				PrintToChat ( param1, "%s You have default gloves now.", PREFIX );
+				SetUserGloves(param1, 0, false);
+				
 			}
 			if (StrEqual(item, "Bloodhound"))
 			{
@@ -1079,6 +1081,11 @@ stock void SetUserGloves ( client, glove, bool bSave ) {
 	
 		        	}
 		        	
+		        	default:
+		        	{
+		        		type = -1;
+		        	}
+		        	
 		        }
 		        
 		        // (c) diller110
@@ -1093,11 +1100,10 @@ stock void SetUserGloves ( client, glove, bool bSave ) {
 				AcceptEntityInput(gloves[client], "Kill");
 				gloves[client] = -1;
 			}
-			int item = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
-			SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", -1); 
 			if(type != -1 && type != -3) {
 				int ent = CreateEntityByName("wearable_item");
 				if(ent != -1 && IsValidEdict(ent)) {
+					SetEntPropString(client, Prop_Send, "m_szArmsModel", "");
 					gloves[client] = ent;
 					SetEntPropEnt(client, Prop_Send, "m_hMyWearables", ent);
 					SetEntProp(ent, Prop_Send, "m_iItemDefinitionIndex", type);
@@ -1108,13 +1114,15 @@ stock void SetUserGloves ( client, glove, bool bSave ) {
 					SetEntPropEnt(ent, Prop_Data, "m_hParent", client);
 					SetEntPropEnt(ent, Prop_Data, "m_hOwnerEntity", client);
 					SetEntPropEnt(ent, Prop_Data, "m_hMoveParent", client);
-					DispatchSpawn(ent);
 					SetEntProp(client, Prop_Send, "m_nBody", 1);
-					ChangeEdictState(ent);
+					DispatchSpawn(ent);
+					//ChangeEdictState(ent);
 				}
 			} else {
 				SetEntProp(client, Prop_Send, "m_nBody", 0);
 			}
+			int item = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
+			SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", -1); 
 			DataPack ph = new DataPack();
 			WritePackCell(ph, EntIndexToEntRef(client));
 			if(IsValidEntity(item))	WritePackCell(ph, EntIndexToEntRef(item));
