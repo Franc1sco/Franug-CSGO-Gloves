@@ -53,8 +53,8 @@ public void OnPluginStart() {
 	HookEvent ( "player_spawn", hookPlayerSpawn );
 	//HookEvent ( "player_death", hookPlayerDeath );
 	
-	cksurf_arms1 = FindConVar("");
-	cksurf_arms2 = FindConVar("");
+	cksurf_arms1 = FindConVar("ck_replay_bot_arm_skin");
+	cksurf_arms2 = FindConVar("ck_player_arm_skin");
 	
 	if(cksurf_arms1 != null)
 	{
