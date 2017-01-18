@@ -25,12 +25,14 @@ int g_iChangeLimit [ MAXPLAYERS + 1 ];
 
 float g_fUserQuality [ MAXPLAYERS + 1 ];
 
+Handle cksurf_arms1, cksurf_arms2;
+
 public Plugin myinfo =
 {
 	name = "SM Valve Gloves",
 	author = "Franc1sco franug and hadesownage",
 	description = "",
-	version = "1.2.5-dev",
+	version = "1.2.6-dev",
 	url = ""
 };
 
@@ -50,6 +52,20 @@ public void OnPluginStart() {
  
 	HookEvent ( "player_spawn", hookPlayerSpawn );
 	//HookEvent ( "player_death", hookPlayerDeath );
+	
+	cksurf_arms1 = FindConVar("");
+	cksurf_arms2 = FindConVar("");
+	
+	if(cksurf_arms1 != null)
+	{
+		SetConVarString(cksurf_arms1, "");
+		HookConVarChange(cksurf_arms1, OnSettingChanged);
+	}
+	if(cksurf_arms2 != null)
+	{
+		SetConVarString(cksurf_arms2, "");
+		HookConVarChange(cksurf_arms2, OnSettingChanged);
+	}
 
 	g_cvVipOnly = CreateConVar ( "vip_only", "0", "Set gloves only for VIPs", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
 	g_cvVipFlags = CreateConVar ( "vip_flags", "t", "Set gloves only for VIPs", FCVAR_NOTIFY );
@@ -60,10 +76,29 @@ public void OnPluginStart() {
 
 	for ( int client = 1; client <= MaxClients; client++ )
 		if ( IsValidClient ( client ) )
+		{
 			OnClientCookiesCached ( client );
+			if(IsPlayerAlive(client)) SetUserGloves(client, g_iGlove [ client ], false);
+		}
 			
 	AutoExecConfig ( true, "csgo_gloves" );
 	
+}
+
+public void OnSettingChanged(Handle convar, const char[] oldValue, const char[] newValue)
+{
+	SetConVarString(convar, "");
+}
+
+public void OnPluginEnd() {
+	for(int i = 1; i <= MaxClients; i++)
+		if(gloves[i] != -1 && IsWearable(gloves[i])) {
+			if(IsClientConnected(i) && IsPlayerAlive(i)) {
+				SetEntPropEnt(i, Prop_Send, "m_hMyWearables", -1);
+				SetEntProp(i, Prop_Send, "m_nBody", 0);
+			}
+			AcceptEntityInput(gloves[i], "Kill");
+		}
 }
 
 public Action hookPlayerSpawn ( Handle event, const char [ ] name, bool dontBroadcast ) {
@@ -112,7 +147,6 @@ public void OnClientCookiesCached ( int Client ) {
 	GetClientCookie ( Client, g_pSaveQ, Data, sizeof ( Data ) );
 	
 	g_fUserQuality [ Client ] = StringToFloat ( Data );
-
 }
 
 public Action CommandGloves ( int client, int args ) {
