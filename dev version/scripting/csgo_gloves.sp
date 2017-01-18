@@ -25,14 +25,13 @@ int g_iChangeLimit [ MAXPLAYERS + 1 ];
 
 float g_fUserQuality [ MAXPLAYERS + 1 ];
 
-Handle cksurf_arms1, cksurf_arms2;
 
 public Plugin myinfo =
 {
 	name = "SM Valve Gloves",
 	author = "Franc1sco franug and hadesownage",
 	description = "",
-	version = "1.2.6-dev",
+	version = "1.2.7-dev",
 	url = ""
 };
 
@@ -53,19 +52,6 @@ public void OnPluginStart() {
 	HookEvent ( "player_spawn", hookPlayerSpawn );
 	//HookEvent ( "player_death", hookPlayerDeath );
 	
-	cksurf_arms1 = FindConVar("ck_replay_bot_arm_skin");
-	cksurf_arms2 = FindConVar("ck_player_arm_skin");
-	
-	if(cksurf_arms1 != null)
-	{
-		SetConVarString(cksurf_arms1, "");
-		HookConVarChange(cksurf_arms1, OnSettingChanged);
-	}
-	if(cksurf_arms2 != null)
-	{
-		SetConVarString(cksurf_arms2, "");
-		HookConVarChange(cksurf_arms2, OnSettingChanged);
-	}
 
 	g_cvVipOnly = CreateConVar ( "vip_only", "0", "Set gloves only for VIPs", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
 	g_cvVipFlags = CreateConVar ( "vip_flags", "t", "Set gloves only for VIPs", FCVAR_NOTIFY );
@@ -83,11 +69,6 @@ public void OnPluginStart() {
 			
 	AutoExecConfig ( true, "csgo_gloves" );
 	
-}
-
-public void OnSettingChanged(Handle convar, const char[] oldValue, const char[] newValue)
-{
-	SetConVarString(convar, "");
 }
 
 public void OnPluginEnd() {
@@ -1122,10 +1103,8 @@ stock void SetUserGloves ( client, glove, bool bSave ) {
 		        	}
 		        	
 		        }
-
 			int current = GetEntPropEnt(client, Prop_Send, "m_hMyWearables");
 			if(current != -1 && IsWearable(current)) {
-				
 				AcceptEntityInput(current, "Kill");
 				if (current == gloves[client]) gloves[client] = -1;
 				
@@ -1162,10 +1141,9 @@ stock void SetUserGloves ( client, glove, bool bSave ) {
 			if(IsValidEntity(item))	WritePackCell(ph, EntIndexToEntRef(item));
 			else WritePackCell(ph, -1);
 			CreateTimer(0.0, AddItemTimer, ph, TIMER_FLAG_NO_MAPCHANGE); 
-		        
 		}
 	        
-	        if ( bSave ) {
+		if ( bSave ) {
 	        	
 	        	g_iGlove [ client ] = glove;
 	        	
