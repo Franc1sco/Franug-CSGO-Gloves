@@ -1,3 +1,6 @@
+Recomended version: Dev version
+
+
 ## Commands for open the main menu:
 ```
 sm_glove
