@@ -2,6 +2,7 @@
 #include <sdktools>
 #include <cstrike>
 #include <clientprefs>
+#include <autoexecconfig>
 
 #define		PREFIX			"\x01★ \x04[Gloves]\x01"
 
@@ -25,7 +26,7 @@ int g_iChangeLimit [ MAXPLAYERS + 1 ];
 
 float g_fUserQuality [ MAXPLAYERS + 1 ];
 
-Handle cvar_thirdperson;
+Handle cvar_thirdperson, cvar_cksurffix;
 
 
 public Plugin myinfo =
@@ -33,12 +34,13 @@ public Plugin myinfo =
 	name = "SM Valve Gloves",
 	author = "Franc1sco franug and hadesownage",
 	description = "",
-	version = "1.2.8",
+	version = "1.3",
 	url = ""
 };
 
 public void OnPluginStart() {
 
+	
 	RegConsoleCmd ( "sm_gl", CommandGloves );
 	RegConsoleCmd ( "sm_gls", CommandGloves );
     	
@@ -55,11 +57,15 @@ public void OnPluginStart() {
 	//HookEvent ( "player_death", hookPlayerDeath );
 	
 
-	g_cvVipOnly = CreateConVar ( "sm_csgogloves_viponly", "0", "Set gloves only for VIPs", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
-	g_cvVipFlags = CreateConVar ( "sm_csgogloves_vipflags", "t", "Set gloves only for VIPs", FCVAR_NOTIFY );
-	g_cvCloseMenu = CreateConVar ( "sm_csgogloves_closemenu", "0", "Close menu after selection", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
+	AutoExecConfig_SetFile("csgo_gloves");
 	
-	cvar_thirdperson = CreateConVar ( "sm_csgogloves_thirdperson", "1", "Enable thirdperson view for gloves", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
+	g_cvVipOnly = AutoExecConfig_CreateConVar ( "sm_csgogloves_viponly", "0", "Set gloves only for VIPs", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
+	g_cvVipFlags = AutoExecConfig_CreateConVar ( "sm_csgogloves_vipflags", "t", "Set gloves only for VIPs", FCVAR_NOTIFY );
+	g_cvCloseMenu = AutoExecConfig_CreateConVar ( "sm_csgogloves_closemenu", "0", "Close menu after selection", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
+	
+	cvar_thirdperson = AutoExecConfig_CreateConVar ( "sm_csgogloves_thirdperson", "1", "Enable thirdperson view for gloves", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
+	
+	cvar_cksurffix = AutoExecConfig_CreateConVar ( "sm_csgogloves_cksurffix", "0", "Enable fixes for cksurf plugin", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
 	
 	g_pSave = RegClientCookie ( "ValveGloveszzz", "Store Valve gloves", CookieAccess_Private );
 	g_pSaveQ = RegClientCookie ( "ValveGlovesQ", "Store Valve gloves quality", CookieAccess_Private );
@@ -70,9 +76,10 @@ public void OnPluginStart() {
 			OnClientCookiesCached ( client );
 			if(IsPlayerAlive(client)) SetUserGloves(client, g_iGlove [ client ], false);
 		}
-			
-	AutoExecConfig ( true, "csgo_gloves" );
+		
+	AutoExecConfig_ExecuteFile();
 	
+	AutoExecConfig_CleanFile();
 }
 
 public void OnPluginEnd() {
@@ -98,7 +105,8 @@ public Action hookPlayerSpawn ( Handle event, const char [ ] name, bool dontBroa
 	}
 	
 	if(!IsFakeClient(client) && GetEntProp(client, Prop_Send, "m_bIsControllingBot") != 1) {
-
+		if (g_iGlove[client] == 0)return;
+		
 		int wear = GetEntPropEnt(client, Prop_Send, "m_hMyWearables");
 		if(wear == -1) {
 			SetUserGloves ( client, g_iGlove [ client ], false );
@@ -132,6 +140,8 @@ public void OnClientCookiesCached ( int Client ) {
 	GetClientCookie ( Client, g_pSaveQ, Data, sizeof ( Data ) );
 	
 	g_fUserQuality [ Client ] = StringToFloat ( Data );
+	
+	gloves[Client] = -1;
 }
 
 public Action CommandGloves ( int client, int args ) {
@@ -1109,10 +1119,14 @@ stock void SetUserGloves ( client, glove, bool bSave ) {
 		        }
 			int current = GetEntPropEnt(client, Prop_Send, "m_hMyWearables");
 			if(current != -1 && IsWearable(current)) {
-				AcceptEntityInput(current, "Kill");
-				if (current == gloves[client]) gloves[client] = -1;
+				if (current == gloves[client])
+				{
+					gloves[client] = -1;
+					AcceptEntityInput(current, "Kill");
+				}
 				
 			}
+			
 			if(gloves[client] != -1 && IsWearable(gloves[client])) {
 				AcceptEntityInput(gloves[client], "Kill");
 				gloves[client] = -1;
@@ -1120,7 +1134,7 @@ stock void SetUserGloves ( client, glove, bool bSave ) {
 			if(type != -1 && type != -3) {
 				int ent = CreateEntityByName("wearable_item");
 				if(ent != -1 && IsValidEdict(ent)) {
-					SetEntPropString(client, Prop_Send, "m_szArmsModel", "");
+					//SetEntPropString(client, Prop_Send, "m_szArmsModel", "");
 					gloves[client] = ent;
 					SetEntPropEnt(client, Prop_Send, "m_hMyWearables", ent);
 					SetEntProp(ent, Prop_Send, "m_iItemDefinitionIndex", type);
@@ -1172,6 +1186,10 @@ public Action AddItemTimer(Handle timer, DataPack ph) {
     client = EntRefToEntIndex(ReadPackCell(ph));
     item = EntRefToEntIndex(ReadPackCell(ph));
     if (client != INVALID_ENT_REFERENCE && item != INVALID_ENT_REFERENCE) {
+    	
+    	if(g_iGlove[client] == 0 && GetConVarBool(cvar_cksurffix)) SetEntPropString(client, Prop_Send, "m_szArmsModel", "models/weapons/ct_arms_sas.mdl");
+    	else SetEntPropString(client, Prop_Send, "m_szArmsModel", "");
+    	
         SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", item);
     }    
     return Plugin_Stop;
