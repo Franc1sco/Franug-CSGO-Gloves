@@ -9,11 +9,40 @@ sm_manusi
 ```
 
 ## Cvars
+Configure the cvars in cfg/sourcemod/csgo_gloves.cfg (autocreated file when you load the plugin)
 ```
-sm_csgogloves_viponly "0" // Set gloves only for VIPs
-sm_csgogloves_vipflags "t" // Set gloves only for VIPs
-sm_csgogloves_closemenu "0" // Close menu after selection
-sm_csgogloves_thirdperson "1" // Enable thirdperson view for gloves
+// Close menu after selection
+// -
+// Default: "0"
+// Minimum: "0.000000"
+// Maximum: "1.000000"
+sm_csgogloves_closemenu "0"
+
+// Enable thirdperson view for gloves
+// -
+// Default: "1"
+// Minimum: "0.000000"
+// Maximum: "1.000000"
+sm_csgogloves_thirdperson "1"
+
+// Set gloves only for VIPs
+// -
+// Default: "t"
+sm_csgogloves_vipflags "t"
+
+// Set gloves only for VIPs
+// -
+// Default: "0"
+// Minimum: "0.000000"
+// Maximum: "1.000000"
+sm_csgogloves_viponly "0"
+
+// Enable fixes for cksurf plugin
+// -
+// Default: "0"
+// Minimum: "0.000000"
+// Maximum: "1.000000"
+sm_csgogloves_cksurffix "1"
 ```
 
 ## For report bugs or request features just open a issue here https://gitlab.com/Franc1sco/CSGO-Gloves/issues
@@ -23,4 +52,4 @@ sm_csgogloves_thirdperson "1" // Enable thirdperson view for gloves
 
 Notes: 
 
--If you use cksurf then use this: https://www.dropbox.com/s/iijmyl3vyh6mq4o/ckSurf%20for%20CSGO%20Gloves%20plugin.rar?dl=0
+~~-If you use cksurf then use this: https://www.dropbox.com/s/iijmyl3vyh6mq4o/ckSurf%20for%20CSGO%20Gloves%20plugin.rar?dl=0~~ -> Custom version not needed anymore.
