@@ -42,7 +42,7 @@ sm_csgogloves_viponly "0"
 // Default: "0"
 // Minimum: "0.000000"
 // Maximum: "1.000000"
-sm_csgogloves_cksurffix "1"
+sm_csgogloves_cksurffix "0"
 ```
 
 ## For report bugs or request features just open a issue here https://gitlab.com/Franc1sco/CSGO-Gloves/issues
