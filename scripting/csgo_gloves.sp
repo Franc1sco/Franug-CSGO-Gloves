@@ -51,7 +51,7 @@ public Plugin myinfo =
 	name = "SM Valve Gloves",
 	author = "Franc1sco franug and hadesownage",
 	description = "",
-	version = "1.3",
+	version = "1.3.1",
 	url = "http://steamcommunity.com/id/franug"
 };
 
@@ -1174,11 +1174,11 @@ stock void SetUserGloves ( client, glove, bool bSave ) {
 			}
 			int item = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
 			SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", -1); 
-			DataPack ph = new DataPack();
+			Handle ph;
+			CreateTimer(0.0, AddItemTimer, ph, TIMER_FLAG_NO_MAPCHANGE); 
 			WritePackCell(ph, EntIndexToEntRef(client));
 			if(IsValidEntity(item))	WritePackCell(ph, EntIndexToEntRef(item));
 			else WritePackCell(ph, -1);
-			CreateTimer(0.0, AddItemTimer, ph, TIMER_FLAG_NO_MAPCHANGE); 
 		}
 	        
 		if ( bSave ) {
