@@ -51,7 +51,7 @@ public Plugin myinfo =
 	name = "SM Valve Gloves",
 	author = "Franc1sco franug and hadesownage",
 	description = "",
-	version = "1.3.1",
+	version = "1.3.3",
 	url = "http://steamcommunity.com/id/franug"
 };
 
@@ -111,8 +111,15 @@ public void OnPluginEnd() {
 }
 
 public Action hookPlayerSpawn ( Handle event, const char [ ] name, bool dontBroadcast ) {
+	
+	CreateTimer(2.0, SetGloves, GetEventInt(event, "userid"));
+}
 
-	int client = GetClientOfUserId ( GetEventInt ( event, "userid" ) );
+public Action SetGloves(Handle timer, any userid)
+{
+	int client = GetClientOfUserId ( userid );
+	
+	if (client == 0 || !IsPlayerAlive(client))return;
 	
 	if ( GetConVarInt ( g_cvVipOnly ) ) {
 		
@@ -124,13 +131,9 @@ public Action hookPlayerSpawn ( Handle event, const char [ ] name, bool dontBroa
 	if(!IsFakeClient(client) && GetEntProp(client, Prop_Send, "m_bIsControllingBot") != 1) {
 		if (g_iGlove[client] == 0)return;
 		
-		int wear = GetEntPropEnt(client, Prop_Send, "m_hMyWearables");
-		if(wear == -1) {
-			SetUserGloves ( client, g_iGlove [ client ], false );
-		} else {
-			if(GetConVarBool(cvar_thirdperson)) SetEntProp(client, Prop_Send, "m_nBody", 1);
-		}
+		SetUserGloves ( client, g_iGlove [ client ], false );
 	}
+	
 }
 
 /*
@@ -1148,6 +1151,9 @@ stock void SetUserGloves ( client, glove, bool bSave ) {
 				AcceptEntityInput(gloves[client], "Kill");
 				gloves[client] = -1;
 			}
+			if(gloves[client] != -1 && current != -1) {
+				AcceptEntityInput(current, "Kill");
+			}
 			if(type != -1 && type != -3) {
 				int ent = CreateEntityByName("wearable_item");
 				if(ent != -1 && IsValidEdict(ent)) {
@@ -1175,7 +1181,7 @@ stock void SetUserGloves ( client, glove, bool bSave ) {
 			int item = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
 			SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", -1); 
 			Handle ph;
-			CreateTimer(0.0, AddItemTimer, ph, TIMER_FLAG_NO_MAPCHANGE); 
+			CreateDataTimer(0.0, AddItemTimer, ph); 
 			WritePackCell(ph, EntIndexToEntRef(client));
 			if(IsValidEntity(item))	WritePackCell(ph, EntIndexToEntRef(item));
 			else WritePackCell(ph, -1);
