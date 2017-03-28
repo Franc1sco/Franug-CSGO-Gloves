@@ -45,11 +45,6 @@ sm_csgogloves_viponly "0"
 sm_csgogloves_cksurffix "0"
 ```
 
-## For report bugs or request features just open a issue here https://gitlab.com/Franc1sco/CSGO-Gloves/issues
 
-## Remember to follow the rules listed here https://github.com/Franc1sco/Franug-PRIVATE-PLUGINS
-
-
-Notes: 
-
-~~-If you use cksurf then use this: https://www.dropbox.com/s/iijmyl3vyh6mq4o/ckSurf%20for%20CSGO%20Gloves%20plugin.rar?dl=0~~ -> Custom version not needed anymore.
+## Follow the rules here: https://github.com/Franc1sco/Franug-PRIVATE-PLUGINS
+## Dont forget to give me +rep in my steam profile ( http://steamcommunity.com/id/franug ) if you like my plugins :)
