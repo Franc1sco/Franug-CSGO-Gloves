@@ -51,7 +51,7 @@ public Plugin myinfo =
 	name = "SM Valve Gloves",
 	author = "Franc1sco franug and hadesownage",
 	description = "",
-	version = "1.3.3",
+	version = "1.3.4",
 	url = "http://steamcommunity.com/id/franug"
 };
 
@@ -119,7 +119,7 @@ public Action SetGloves(Handle timer, any userid)
 {
 	int client = GetClientOfUserId ( userid );
 	
-	if (client == 0 || !IsPlayerAlive(client))return;
+	if (client == 0 || !IsClientInGame(client) || !IsPlayerAlive(client))return;
 	
 	if ( GetConVarInt ( g_cvVipOnly ) ) {
 		
