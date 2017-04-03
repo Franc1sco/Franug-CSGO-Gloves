@@ -43,6 +43,13 @@ sm_csgogloves_viponly "0"
 // Minimum: "0.000000"
 // Maximum: "1.000000"
 sm_csgogloves_cksurffix "0"
+
+// Enable fixes for 1v1 plugin
+// -
+// Default: "0"
+// Minimum: "0.000000"
+// Maximum: "1.000000"
+sm_csgogloves_1v1fix "0"
 ```
 
 
