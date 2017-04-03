@@ -44,12 +44,12 @@ sm_csgogloves_viponly "0"
 // Maximum: "1.000000"
 sm_csgogloves_cksurffix "0"
 
-// Enable fixes for 1v1 plugin
+// Enable delay after spawn.
 // -
 // Default: "0"
 // Minimum: "0.000000"
 // Maximum: "1.000000"
-sm_csgogloves_1v1fix "0"
+sm_csgogloves_delaySpawn "0"
 ```
 
 
