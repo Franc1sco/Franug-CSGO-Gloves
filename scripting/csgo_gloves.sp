@@ -35,7 +35,7 @@
 Handle g_pSave;
 Handle g_pSaveQ;
 
-ConVar g_cvVipOnly, g_cvVipFlags, g_cvCloseMenu;
+ConVar g_cvVipOnly, g_cvVipFlags, g_cvCloseMenu, cvar_delaySpawn;
 
 int g_iGlove [ MAXPLAYERS + 1 ];
 int gloves[ MAXPLAYERS + 1 ];
@@ -43,7 +43,7 @@ int g_iChangeLimit [ MAXPLAYERS + 1 ];
 
 float g_fUserQuality [ MAXPLAYERS + 1 ];
 
-Handle cvar_thirdperson, cvar_cksurffix, cvar_1v1fix;
+Handle cvar_thirdperson, cvar_cksurffix;
 
 
 public Plugin myinfo =
@@ -83,8 +83,9 @@ public void OnPluginStart() {
 	cvar_thirdperson = AutoExecConfig_CreateConVar ( "sm_csgogloves_thirdperson", "1", "Enable thirdperson view for gloves", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
 	
 	cvar_cksurffix = AutoExecConfig_CreateConVar ( "sm_csgogloves_cksurffix", "0", "Enable fixes for cksurf plugin", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
-	cvar_1v1fix = AutoExecConfig_CreateConVar ( "sm_csgogloves_1v1fix", "0", "Enable fixes for 1v1 plugin", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
 	
+	cvar_delaySpawn = AutoExecConfig_CreateConVar ( "sm_csgogloves_delaySpawn", "0", "Enable delay after spawn.", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
+		
 	g_pSave = RegClientCookie ( "ValveGloveszzz", "Store Valve gloves", CookieAccess_Private );
 	g_pSaveQ = RegClientCookie ( "ValveGlovesQ", "Store Valve gloves quality", CookieAccess_Private );
 
@@ -111,39 +112,31 @@ public void OnPluginEnd() {
 		}
 }
 
-public Action hookPlayerSpawn ( Handle event, const char [ ] name, bool dontBroadcast ) {
+public Action hookPlayerSpawn(Handle event, const char[] name, bool dontBroadcast) {
 	
-	if(GetConVarBool(cvar_1v1fix)) CreateTimer(2.0, SetGloves, GetEventInt(event, "userid"));
-	else
-	{
-		int client = GetClientOfUserId ( GetEventInt ( event, "userid" ) );
-		
-		if ( GetConVarInt ( g_cvVipOnly ) ) {
-		
-			if ( !IsValidClient ( client ) || !g_iGlove [ client ] || !IsUserVip ( client ) )
-				return;
-			
-		}
+	int client = GetClientOfUserId(GetEventInt(event, "userid"));
 	
-		if(!IsFakeClient(client) && GetEntProp(client, Prop_Send, "m_bIsControllingBot") != 1) {
-			if (g_iGlove[client] == 0)return;
+	if (client == 0 || !IsClientInGame(client) || !IsPlayerAlive(client)) return;
+	
+	if (GetConVarBool(cvar_delaySpawn)) {
+		CreateTimer(2.0, SetGloves, client);
+
+	} else if (!IsFakeClient(client) && GetEntProp(client, Prop_Send, "m_bIsControllingBot") != 1) {
+
+		if (g_iGlove[client] == 0) return;
 		
-			SetUserGloves ( client, g_iGlove [ client ], false );
-		}
-	}
+		SetUserGloves(client, g_iGlove[client], false, true);
+	}		
+		
 }
 
-public Action SetGloves(Handle timer, any userid)
+public Action SetGloves(Handle timer, int client)
 {
-	int client = GetClientOfUserId(userid);
-	
-	if (client == 0 || !IsClientInGame(client) || !IsPlayerAlive(client))return;
 	
 	if ( GetConVarInt ( g_cvVipOnly ) ) {
 		
 		if ( !IsValidClient ( client ) || !g_iGlove [ client ] || !IsUserVip ( client ) )
-			return;
-			
+			return;	
 	}
 	
 	if(!IsFakeClient(client) && GetEntProp(client, Prop_Send, "m_bIsControllingBot") != 1) {
@@ -151,6 +144,7 @@ public Action SetGloves(Handle timer, any userid)
 		
 		SetUserGloves ( client, g_iGlove [ client ], false );
 	}
+	
 }
 
 /*
@@ -966,7 +960,7 @@ public Sport_Handler(Handle menu, MenuAction action, int param1, int param2)
 	}
 }
 
-stock void SetUserGloves ( client, glove, bool bSave ) {
+stock void SetUserGloves (int client, int glove, bool bSave, bool onSpawn = false) {
 	
 	if ( IsValidClient ( client )) {
 	
@@ -1195,13 +1189,19 @@ stock void SetUserGloves ( client, glove, bool bSave ) {
 			} else {
 				SetEntProp(client, Prop_Send, "m_nBody", 0);
 			}
-			int item = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
-			SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", -1); 
-			Handle ph;
-			CreateDataTimer(0.0, AddItemTimer, ph); 
-			WritePackCell(ph, EntIndexToEntRef(client));
-			if(IsValidEntity(item))	WritePackCell(ph, EntIndexToEntRef(item));
-			else WritePackCell(ph, -1);
+			if (!onSpawn) {
+				
+				int item = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
+				
+				SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", -1); 
+				
+				Handle ph;
+				CreateDataTimer(0.0, AddItemTimer, ph); 
+				WritePackCell(ph, EntIndexToEntRef(client));
+				
+				(IsValidEntity(item)) ? WritePackCell(ph, EntIndexToEntRef(item)) : WritePackCell(ph, -1);				
+			}
+			
 		}
 	        
 		if ( bSave ) {
