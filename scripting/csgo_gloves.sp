@@ -43,7 +43,7 @@ int g_iChangeLimit [ MAXPLAYERS + 1 ];
 
 float g_fUserQuality [ MAXPLAYERS + 1 ];
 
-Handle cvar_thirdperson, cvar_cksurffix;
+Handle cvar_thirdperson, cvar_cksurffix, cvar_1v1fix;
 
 
 public Plugin myinfo =
@@ -51,7 +51,7 @@ public Plugin myinfo =
 	name = "SM Valve Gloves",
 	author = "Franc1sco franug and hadesownage",
 	description = "",
-	version = "1.3.4",
+	version = "1.3.5",
 	url = "http://steamcommunity.com/id/franug"
 };
 
@@ -83,6 +83,7 @@ public void OnPluginStart() {
 	cvar_thirdperson = AutoExecConfig_CreateConVar ( "sm_csgogloves_thirdperson", "1", "Enable thirdperson view for gloves", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
 	
 	cvar_cksurffix = AutoExecConfig_CreateConVar ( "sm_csgogloves_cksurffix", "0", "Enable fixes for cksurf plugin", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
+	cvar_1v1fix = AutoExecConfig_CreateConVar ( "sm_csgogloves_1v1fix", "0", "Enable fixes for 1v1 plugin", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
 	
 	g_pSave = RegClientCookie ( "ValveGloveszzz", "Store Valve gloves", CookieAccess_Private );
 	g_pSaveQ = RegClientCookie ( "ValveGlovesQ", "Store Valve gloves quality", CookieAccess_Private );
@@ -112,12 +113,29 @@ public void OnPluginEnd() {
 
 public Action hookPlayerSpawn ( Handle event, const char [ ] name, bool dontBroadcast ) {
 	
-	CreateTimer(2.0, SetGloves, GetEventInt(event, "userid"));
+	if(GetConVarBool(cvar_1v1fix)) CreateTimer(2.0, SetGloves, GetEventInt(event, "userid"));
+	else
+	{
+		int client = GetClientOfUserId ( GetEventInt ( event, "userid" ) );
+		
+		if ( GetConVarInt ( g_cvVipOnly ) ) {
+		
+			if ( !IsValidClient ( client ) || !g_iGlove [ client ] || !IsUserVip ( client ) )
+				return;
+			
+		}
+	
+		if(!IsFakeClient(client) && GetEntProp(client, Prop_Send, "m_bIsControllingBot") != 1) {
+			if (g_iGlove[client] == 0)return;
+		
+			SetUserGloves ( client, g_iGlove [ client ], false );
+		}
+	}
 }
 
 public Action SetGloves(Handle timer, any userid)
 {
-	int client = GetClientOfUserId ( userid );
+	int client = GetClientOfUserId(userid);
 	
 	if (client == 0 || !IsClientInGame(client) || !IsPlayerAlive(client))return;
 	
@@ -133,7 +151,6 @@ public Action SetGloves(Handle timer, any userid)
 		
 		SetUserGloves ( client, g_iGlove [ client ], false );
 	}
-	
 }
 
 /*
