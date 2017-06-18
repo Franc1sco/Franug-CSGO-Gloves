@@ -25,6 +25,9 @@
 
 #define		VALVE_TOTAL_GLOVES	24
 
+#define CTARMS "models/weapons/ct_arms.mdl"
+#define TTARMS "models/weapons/t_arms.mdl"
+
 #define 	BLOODHOUND 		5027
 #define		SPORT			5030
 #define		DRIVER			5031
@@ -35,7 +38,7 @@
 Handle g_pSave;
 Handle g_pSaveQ;
 
-ConVar g_cvVipOnly, g_cvVipFlags, g_cvCloseMenu, cvar_delaySpawn;
+ConVar g_cvVipOnly, g_cvVipFlags, g_cvCloseMenu, cvar_delaySpawn, cvar_fix;
 
 int g_iGlove [ MAXPLAYERS + 1 ];
 int gloves[ MAXPLAYERS + 1 ];
@@ -43,7 +46,7 @@ int g_iChangeLimit [ MAXPLAYERS + 1 ];
 
 float g_fUserQuality [ MAXPLAYERS + 1 ];
 
-Handle cvar_thirdperson, cvar_cksurffix;
+Handle cvar_thirdperson;
 
 
 public Plugin myinfo =
@@ -51,7 +54,7 @@ public Plugin myinfo =
 	name = "SM Valve Gloves",
 	author = "Franc1sco franug and hadesownage",
 	description = "",
-	version = "1.3.6",
+	version = "1.3.7",
 	url = "http://steamcommunity.com/id/franug"
 };
 
@@ -82,9 +85,8 @@ public void OnPluginStart() {
 	
 	cvar_thirdperson = AutoExecConfig_CreateConVar ( "sm_csgogloves_thirdperson", "1", "Enable thirdperson view for gloves", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
 	
-	cvar_cksurffix = AutoExecConfig_CreateConVar ( "sm_csgogloves_cksurffix", "0", "Enable fixes for cksurf plugin", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
-	
 	cvar_delaySpawn = AutoExecConfig_CreateConVar ( "sm_csgogloves_delaySpawn", "0", "Enable delay after spawn.", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
+	cvar_fix = AutoExecConfig_CreateConVar ( "sm_csgogloves_hotfix", "0", "Enable hotfix for invisible arms.", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
 		
 	g_pSave = RegClientCookie ( "ValveGloveszzz", "Store Valve gloves", CookieAccess_Private );
 	g_pSaveQ = RegClientCookie ( "ValveGlovesQ", "Store Valve gloves quality", CookieAccess_Private );
@@ -101,6 +103,12 @@ public void OnPluginStart() {
 	AutoExecConfig_CleanFile();
 }
 
+public OnMapStart()
+{
+	PrecacheModel(CTARMS, true);
+	PrecacheModel(TTARMS, true);
+}
+
 public void OnPluginEnd() {
 	for(int i = 1; i <= MaxClients; i++)
 		if(gloves[i] != -1 && IsWearable(gloves[i])) {
@@ -114,13 +122,18 @@ public void OnPluginEnd() {
 
 public Action hookPlayerSpawn(Handle event, const char[] name, bool dontBroadcast) {
 	
+	int client = GetClientOfUserId(GetEventInt(event, "userid"));
+	if (g_iGlove[client] == 0)
+	{
+		if(GetConVarBool(cvar_fix)) NormalGloves(client);
+		return;
+	}
 	if (GetConVarBool(cvar_delaySpawn)) 
 	{
 		CreateTimer(2.0, SetGloves, GetEventInt(event, "userid"));
 	} 
 	else
 	{
-		int client = GetClientOfUserId(GetEventInt(event, "userid"));
 		
 		if (IsFakeClient(client) || GetEntProp(client, Prop_Send, "m_bIsControllingBot") == 1)return;
 
@@ -170,7 +183,7 @@ public void OnClientCookiesCached ( int Client ) {
 
 	GetClientCookie ( Client, g_pSave, Data, sizeof ( Data ) );
 
-	g_iGlove [ Client ] = StringToInt ( Data );
+	g_iGlove [ Client ] = StringToInt(Data);
 	
 	GetClientCookie ( Client, g_pSaveQ, Data, sizeof ( Data ) );
 	
@@ -1224,6 +1237,14 @@ stock void SetUserGloves (int client, int glove, bool bSave, bool onSpawn = fals
 	
 }
 
+stock NormalGloves(client)
+{
+	switch(GetClientTeam(client))
+	{
+		case 2: SetEntPropString(client, Prop_Send, "m_szArmsModel", TTARMS);
+		case 3: SetEntPropString(client, Prop_Send, "m_szArmsModel", CTARMS);
+	}
+}
 public Action AddItemTimer(Handle timer, DataPack ph) {
     int client, item;
     ResetPack(ph);
@@ -1231,7 +1252,7 @@ public Action AddItemTimer(Handle timer, DataPack ph) {
     item = EntRefToEntIndex(ReadPackCell(ph));
     if (client != INVALID_ENT_REFERENCE && item != INVALID_ENT_REFERENCE) {
     	
-    	if(g_iGlove[client] == 0 && GetConVarBool(cvar_cksurffix)) SetEntPropString(client, Prop_Send, "m_szArmsModel", "models/weapons/ct_arms_sas.mdl");
+    	if (g_iGlove[client] == 0 && GetConVarBool(cvar_fix))NormalGloves(client);
     	else SetEntPropString(client, Prop_Send, "m_szArmsModel", "");
     	
         SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", item);
