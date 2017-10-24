@@ -54,7 +54,7 @@ public Plugin myinfo =
 	name = "SM Valve Gloves",
 	author = "Franc1sco franug and hadesownage",
 	description = "",
-	version = "1.3.7",
+	version = "1.3.8",
 	url = "http://steamcommunity.com/id/franug"
 };
 
@@ -73,7 +73,7 @@ public void OnPluginStart() {
 	RegConsoleCmd ( "sm_manusa", CommandGloves );
 	RegConsoleCmd ( "sm_manusi", CommandGloves );
  
-	HookEvent ( "player_spawn", hookPlayerSpawn );
+	HookEvent ( "player_spawn", hookPlayerSpawn, EventHookMode_Pre);
 	//HookEvent ( "player_death", hookPlayerDeath );
 	
 
