@@ -54,7 +54,7 @@ public Plugin myinfo =
 	name = "SM Valve Gloves",
 	author = "Franc1sco franug and hadesownage",
 	description = "",
-	version = "1.3.8",
+	version = "1.3.9",
 	url = "http://steamcommunity.com/id/franug"
 };
 
@@ -179,6 +179,17 @@ public Action hookPlayerDeath ( Handle event, const char [ ] name, bool dontBroa
 
 public void OnClientCookiesCached ( int Client ) {
 
+	if ( GetConVarInt ( g_cvVipOnly ) ) {
+		
+		if (!IsUserVip ( Client ) )
+		{
+			g_iGlove [ Client ] = 0;
+			g_fUserQuality[Client] = 0.0;
+			
+			return;	
+		}
+	}
+	
 	char Data [ 32 ];
 
 	GetClientCookie ( Client, g_pSave, Data, sizeof ( Data ) );
