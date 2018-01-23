@@ -54,7 +54,7 @@ public Plugin myinfo =
 	name = "SM Valve Gloves",
 	author = "Franc1sco franug and hadesownage",
 	description = "",
-	version = "1.4",
+	version = "1.4.1",
 	url = "http://steamcommunity.com/id/franug"
 };
 
@@ -1169,16 +1169,16 @@ stock void SetUserGloves (int client, int glove, bool bSave, bool onSpawn = fals
 				ent = CreateEntityByName("wearable_item");
 				if(ent != -1)
 				{
-					SetEntPropEnt(ent, Prop_Data, "m_iItemIDLow", -1);
-					SetEntPropEnt(ent, Prop_Data, "m_iItemDefinitionIndex", type);
-					SetEntPropEnt(ent, Prop_Data, "m_nFallbackPaintKit", skin);
+					SetEntPropEnt(ent, Prop_Send, "m_iItemIDLow", -1);
+					SetEntPropEnt(ent, Prop_Send, "m_iItemDefinitionIndex", type);
+					SetEntPropEnt(ent, Prop_Send, "m_nFallbackPaintKit", skin);
 					
-					SetEntPropFloat(ent, Prop_Data, "m_flFallbackWear", g_fUserQuality [ client ]);
+					SetEntPropFloat(ent, Prop_Send, "m_flFallbackWear", g_fUserQuality [ client ]);
 					SetEntPropEnt(ent, Prop_Data, "m_hOwnerEntity", client);
 					SetEntPropEnt(ent, Prop_Data, "m_hParent", client);
 					bool g_iEnableWorldModel = GetConVarBool(cvar_thirdperson);
 					if(g_iEnableWorldModel) SetEntPropEnt(ent, Prop_Data, "m_hMoveParent", client);
-					SetEntPropEnt(ent, Prop_Data, "m_bInitialized", 1);
+					SetEntPropEnt(ent, Prop_Send, "m_bInitialized", 1);
 			
 					DispatchSpawn(ent);
 					
@@ -1290,12 +1290,13 @@ public Action Timer_CheckLimit ( Handle timer, any user_index ) {
 
 }
 
-stock IsValidClient ( client ) {
-
-	if ( !( 1 <= client <= MaxClients ) || !IsClientInGame ( client ) || IsFakeClient( client ) || GetEntProp(client, Prop_Send, "m_bIsControllingBot") == 1 )
-		return false;
-
-	return true;
+stock bool IsValidClient(int client)
+{
+    if (!(1 <= client <= MaxClients) || !IsClientInGame(client) || IsFakeClient(client) || IsClientSourceTV(client) || IsClientReplay(client))
+    {
+        return false;
+    }
+    return true;
 }
 
 bool IsUserVip ( int client ) {
