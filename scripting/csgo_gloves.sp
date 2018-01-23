@@ -54,7 +54,7 @@ public Plugin myinfo =
 	name = "SM Valve Gloves",
 	author = "Franc1sco franug and hadesownage",
 	description = "",
-	version = "1.4.2",
+	version = "1.4.3",
 	url = "http://steamcommunity.com/id/franug"
 };
 
@@ -1193,6 +1193,14 @@ stock void SetUserGloves (int client, int glove, bool bSave, bool onSpawn = fals
 			{
 				if(!onSpawn)
 				{
+					//PrintToChat(client, "pasado");
+					int ent = GetEntPropEnt(client, Prop_Send, "m_hMyWearables");
+					if(ent != -1)
+					{
+						AcceptEntityInput(ent, "KillHierarchy");
+					}
+					
+					//NormalGloves(client);
 					int activeWeapon = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
 					if(activeWeapon != -1)
 					{
@@ -1201,19 +1209,17 @@ stock void SetUserGloves (int client, int glove, bool bSave, bool onSpawn = fals
 					if(activeWeapon != -1)
 					{
 						DataPack dpack;
-						CreateDataTimer(0.1, ResetGlovesTimer, dpack);
+						CreateDataTimer(0.1, ResetGlovesTimer2, dpack);
 						dpack.WriteCell(client);
 						dpack.WriteCell(activeWeapon);
 					}
-					int ent = GetEntPropEnt(client, Prop_Send, "m_hMyWearables");
-					if(ent != -1)
-					{
-						AcceptEntityInput(ent, "KillHierarchy");
-					}
-					NormalGloves(client);
+					else NormalGloves(client);
+
 					
 				}
 				else NormalGloves(client);
+				
+				//PrintToChat(client, "pasado2");
 			}		
 			
 		}
@@ -1279,6 +1285,19 @@ public Action ResetGlovesTimer(Handle timer, DataPack pack)
 	}
 }
 
+public Action ResetGlovesTimer2(Handle timer, DataPack pack)
+{
+	ResetPack(pack);
+	int clientIndex = pack.ReadCell();
+	int activeWeapon = pack.ReadCell();
+	
+	if(IsClientInGame(clientIndex))
+	{
+		NormalGloves(clientIndex);
+		SetEntPropEnt(clientIndex, Prop_Send, "m_hActiveWeapon", activeWeapon);
+	}
+}
+
 public Action Timer_CheckLimit ( Handle timer, any user_index ) {
 
 	int client = GetClientOfUserId ( user_index );
@@ -1290,13 +1309,12 @@ public Action Timer_CheckLimit ( Handle timer, any user_index ) {
 
 }
 
-stock bool IsValidClient(int client)
-{
-    if (!(1 <= client <= MaxClients) || !IsClientInGame(client) || IsFakeClient(client) || IsClientSourceTV(client) || IsClientReplay(client))
-    {
-        return false;
-    }
-    return true;
+stock IsValidClient ( client ) {
+
+	if ( !( 1 <= client <= MaxClients ) || !IsClientInGame ( client ) || IsFakeClient( client ) || GetEntProp(client, Prop_Send, "m_bIsControllingBot") == 1 )
+		return false;
+
+	return true;
 }
 
 bool IsUserVip ( int client ) {
