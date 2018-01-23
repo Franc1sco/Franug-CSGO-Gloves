@@ -38,7 +38,7 @@
 Handle g_pSave;
 Handle g_pSaveQ;
 
-ConVar g_cvVipOnly, g_cvVipFlags, g_cvCloseMenu, cvar_delaySpawn, cvar_fix;
+ConVar g_cvVipOnly, g_cvVipFlags, g_cvCloseMenu;
 
 int g_iGlove [ MAXPLAYERS + 1 ];
 int gloves[ MAXPLAYERS + 1 ];
@@ -84,9 +84,6 @@ public void OnPluginStart() {
 	g_cvCloseMenu = AutoExecConfig_CreateConVar ( "sm_csgogloves_closemenu", "0", "Close menu after selection", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
 	
 	cvar_thirdperson = AutoExecConfig_CreateConVar ( "sm_csgogloves_thirdperson", "1", "Enable thirdperson view for gloves", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
-	
-	cvar_delaySpawn = AutoExecConfig_CreateConVar ( "sm_csgogloves_delaySpawn", "0", "Enable delay after spawn.", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
-	cvar_fix = AutoExecConfig_CreateConVar ( "sm_csgogloves_hotfix", "0", "Enable hotfix for invisible arms.", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
 		
 	g_pSave = RegClientCookie ( "ValveGloveszzz", "Store Valve gloves", CookieAccess_Private );
 	g_pSaveQ = RegClientCookie ( "ValveGlovesQ", "Store Valve gloves quality", CookieAccess_Private );
@@ -123,45 +120,8 @@ public void OnPluginEnd() {
 public Action hookPlayerSpawn(Handle event, const char[] name, bool dontBroadcast) {
 	
 	int client = GetClientOfUserId(GetEventInt(event, "userid"));
-	if (g_iGlove[client] == 0)
-	{
-		if(GetConVarBool(cvar_fix)) NormalGloves(client);
-		return;
-	}
-	if (GetConVarBool(cvar_delaySpawn)) 
-	{
-		CreateTimer(2.0, SetGloves, GetEventInt(event, "userid"));
-	} 
-	else
-	{
 		
-		if (IsFakeClient(client) || GetEntProp(client, Prop_Send, "m_bIsControllingBot") == 1)return;
-
-		//if (g_iGlove[client] == 0) return;
-		
-		SetUserGloves(client, g_iGlove[client], false, true);
-	}		
-		
-}
-
-public Action SetGloves(Handle timer, int userid)
-{
-	int client = GetClientOfUserId(userid);
-	
-	if (client == 0 || !IsClientInGame(client) || !IsPlayerAlive(client)) return;
-	
-	if ( GetConVarInt ( g_cvVipOnly ) ) {
-		
-		if ( !IsValidClient ( client ) || !g_iGlove [ client ] || !IsUserVip ( client ) )
-			return;	
-	}
-	
-	if(!IsFakeClient(client) && GetEntProp(client, Prop_Send, "m_bIsControllingBot") != 1) {
-		//if (g_iGlove[client] == 0)return;
-		
-		SetUserGloves ( client, g_iGlove [ client ], false );
-	}
-	
+	SetUserGloves(client, g_iGlove[client], false, true);			
 }
 
 /*
@@ -1229,7 +1189,7 @@ stock void SetUserGloves (int client, int glove, bool bSave, bool onSpawn = fals
 			
 				}
 			}
-			else if(GetConVarBool(cvar_fix))
+			else
 			{
 				if(!onSpawn)
 				{
