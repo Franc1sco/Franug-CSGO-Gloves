@@ -54,7 +54,7 @@ public Plugin myinfo =
 	name = "SM Valve Gloves",
 	author = "Franc1sco franug and hadesownage",
 	description = "",
-	version = "1.3.11",
+	version = "1.4",
 	url = "http://steamcommunity.com/id/franug"
 };
 
@@ -137,7 +137,7 @@ public Action hookPlayerSpawn(Handle event, const char[] name, bool dontBroadcas
 		
 		if (IsFakeClient(client) || GetEntProp(client, Prop_Send, "m_bIsControllingBot") == 1)return;
 
-		if (g_iGlove[client] == 0) return;
+		//if (g_iGlove[client] == 0) return;
 		
 		SetUserGloves(client, g_iGlove[client], false, true);
 	}		
@@ -157,7 +157,7 @@ public Action SetGloves(Handle timer, int userid)
 	}
 	
 	if(!IsFakeClient(client) && GetEntProp(client, Prop_Send, "m_bIsControllingBot") != 1) {
-		if (g_iGlove[client] == 0)return;
+		//if (g_iGlove[client] == 0)return;
 		
 		SetUserGloves ( client, g_iGlove [ client ], false );
 	}
@@ -996,7 +996,7 @@ stock void SetUserGloves (int client, int glove, bool bSave, bool onSpawn = fals
 	
 	if ( IsValidClient ( client )) 
 	{
-	
+		gloves[client] = -1;
 		if ( IsPlayerAlive ( client ) ) 
 		{
 
@@ -1183,55 +1183,79 @@ stock void SetUserGloves (int client, int glove, bool bSave, bool onSpawn = fals
 		        	}
 		        	
 			}
-			int current = GetEntPropEnt(client, Prop_Send, "m_hMyWearables");
-			if(current != -1 && IsWearable(current)) 
-			{
-				if (current == gloves[client])
-				{
-					gloves[client] = -1;
-					AcceptEntityInput(current, "Kill");
-				}
-				
-			}
-			
-			if(gloves[client] != -1 && IsWearable(gloves[client])) {
-				AcceptEntityInput(gloves[client], "Kill");
-				gloves[client] = -1;
-			}
-			if(gloves[client] != -1 && current != -1) {
-				AcceptEntityInput(current, "Kill");
-			}
 			if(type != -1 && type != -3) 
 			{
-				int ent = CreateEntityByName("wearable_item");
-				if(ent != -1 && IsValidEdict(ent)) 
+				if(!onSpawn)
 				{
-					//SetEntPropString(client, Prop_Send, "m_szArmsModel", "");
-					gloves[client] = ent;
-					SetEntPropEnt(client, Prop_Send, "m_hMyWearables", ent);
-					SetEntProp(ent, Prop_Send, "m_iItemDefinitionIndex", type);
-					SetEntProp(ent, Prop_Send,  "m_nFallbackPaintKit", skin);
-					SetEntPropFloat(ent, Prop_Send, "m_flFallbackWear", g_fUserQuality [ client ]);
-					SetEntProp(ent, Prop_Send, "m_iItemIDLow", 2048);
-					SetEntProp(ent, Prop_Send, "m_bInitialized", 1);
-					SetEntPropEnt(ent, Prop_Data, "m_hParent", client);
-					SetEntPropEnt(ent, Prop_Data, "m_hOwnerEntity", client);
-					if(GetConVarBool(cvar_thirdperson))
+					int activeWeapon = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
+					if(activeWeapon != -1)
 					{
-						SetEntPropEnt(ent, Prop_Data, "m_hMoveParent", client);
-						SetEntProp(client, Prop_Send, "m_nBody", 1);
+						SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", -1);
 					}
-					DispatchSpawn(ent);
-					//ChangeEdictState(ent);
+					if(activeWeapon != -1)
+					{
+						DataPack dpack;
+						CreateDataTimer(0.1, ResetGlovesTimer, dpack);
+						dpack.WriteCell(client);
+						dpack.WriteCell(activeWeapon);
+					}
 				}
-			} 
-			else 
-			{
-				SetEntProp(client, Prop_Send, "m_nBody", 0);
+				int ent = GetEntPropEnt(client, Prop_Send, "m_hMyWearables");
+				if(ent != -1)
+				{
+					AcceptEntityInput(ent, "KillHierarchy");
+				}
+				FixCustomArms(client);
+				ent = CreateEntityByName("wearable_item");
+				if(ent != -1)
+				{
+					SetEntPropEnt(ent, Prop_Data, "m_iItemIDLow", -1);
+					SetEntPropEnt(ent, Prop_Data, "m_iItemDefinitionIndex", type);
+					SetEntPropEnt(ent, Prop_Data, "m_nFallbackPaintKit", skin);
+					
+					SetEntPropFloat(ent, Prop_Data, "m_flFallbackWear", g_fUserQuality [ client ]);
+					SetEntPropEnt(ent, Prop_Data, "m_hOwnerEntity", client);
+					SetEntPropEnt(ent, Prop_Data, "m_hParent", client);
+					bool g_iEnableWorldModel = GetConVarBool(cvar_thirdperson);
+					if(g_iEnableWorldModel) SetEntPropEnt(ent, Prop_Data, "m_hMoveParent", client);
+					SetEntPropEnt(ent, Prop_Data, "m_bInitialized", 1);
+			
+					DispatchSpawn(ent);
+					
+					gloves[client] = ent;
+					
+					SetEntPropEnt(client, Prop_Send, "m_hMyWearables", ent);
+					if(g_iEnableWorldModel) SetEntProp(client, Prop_Send, "m_nBody", 1);
+			
+				}
 			}
-				
-		
-			ReactivateWeapon(client);			
+			else if(GetConVarBool(cvar_fix))
+			{
+				if(!onSpawn)
+				{
+					int activeWeapon = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
+					if(activeWeapon != -1)
+					{
+						SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", -1);
+					}
+					if(activeWeapon != -1)
+					{
+						DataPack dpack;
+						CreateDataTimer(0.1, ResetGlovesTimer, dpack);
+						dpack.WriteCell(client);
+						dpack.WriteCell(activeWeapon);
+					}
+					int ent = GetEntPropEnt(client, Prop_Send, "m_hMyWearables");
+					if(ent != -1)
+					{
+						AcceptEntityInput(ent, "KillHierarchy");
+					}
+					NormalGloves(client);
+					
+				}
+				else NormalGloves(client);
+			}		
+			
 		}
 			
 	}
@@ -1251,56 +1275,48 @@ stock void SetUserGloves (int client, int glove, bool bSave, bool onSpawn = fals
 		
 }
 
-void ReactivateWeapon(int client)
-{
-	new iItem = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
-	SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", -1);
-	DataPack ph = new DataPack();
-	WritePackCell(ph, EntIndexToEntRef(client));
-
-	if(IsValidEntity(iItem)) {
-		WritePackCell(ph, EntIndexToEntRef(iItem));
-	}
-	else {
-		WritePackCell(ph, -1);
-	}
-
-	CreateTimer(0.1, ReactivateWeaponTimer, ph, TIMER_FLAG_NO_MAPCHANGE);
-}
-
-public Action ReactivateWeaponTimer(Handle:timer, DataPack:ph)
-{
-	ResetPack(ph);
-
-	new client = EntRefToEntIndex(ReadPackCell(ph));
-	new iItem = EntRefToEntIndex(ReadPackCell(ph));
-
-	if(client != INVALID_ENT_REFERENCE && iItem != INVALID_ENT_REFERENCE) 
-	{
-		
-		if (g_iGlove[client] == 0 && GetConVarBool(cvar_fix))NormalGloves(client);
-		else SetEntPropString(client, Prop_Send, "m_szArmsModel", "");
-    	
-		SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", iItem);
-	}
-
-	CloseHandle(ph);
-}
-
-stock NormalGloves(client)
-{
-	switch(GetClientTeam(client))
-	{
-		case 2: SetEntPropString(client, Prop_Send, "m_szArmsModel", TTARMS);
-		case 3: SetEntPropString(client, Prop_Send, "m_szArmsModel", CTARMS);
-	}
-}
-
 stock bool IsWearable(int ent) {
 	if(!IsValidEdict(ent)) return false;
 	char weaponclass[32]; GetEdictClassname(ent, weaponclass, sizeof(weaponclass));
 	if(StrContains(weaponclass, "wearable", false) == -1) return false;
 	return true;
+}
+
+stock NormalGloves(client)
+{
+	char temp[2];
+	GetEntPropString(client, Prop_Send, "m_szArmsModel", temp, sizeof(temp));
+	if(!temp[0] && GetEntPropEnt(client, Prop_Send, "m_hMyWearables") == -1)
+	{
+		//PrintToChat(client, "pasado");
+		switch(GetClientTeam(client))
+		{
+			case 2: SetEntPropString(client, Prop_Send, "m_szArmsModel", TTARMS);
+			case 3: SetEntPropString(client, Prop_Send, "m_szArmsModel", CTARMS);
+		}
+	}
+}
+
+stock void FixCustomArms(int client)
+{
+	char temp[2];
+	GetEntPropString(client, Prop_Send, "m_szArmsModel", temp, sizeof(temp));
+	if(temp[0])
+	{
+		SetEntPropString(client, Prop_Send, "m_szArmsModel", "");
+	}
+}
+
+public Action ResetGlovesTimer(Handle timer, DataPack pack)
+{
+	ResetPack(pack);
+	int clientIndex = pack.ReadCell();
+	int activeWeapon = pack.ReadCell();
+	
+	if(IsClientInGame(clientIndex))
+	{
+		SetEntPropEnt(clientIndex, Prop_Send, "m_hActiveWeapon", activeWeapon);
+	}
 }
 
 public Action Timer_CheckLimit ( Handle timer, any user_index ) {
