@@ -34,6 +34,7 @@
 #define 	HAND			5032
 #define		MOTOCYCLE		5033
 #define		SPECIALIST		5034
+#define		HYDRA		5035
 
 Handle g_pSave;
 Handle g_pSaveQ;
@@ -54,7 +55,7 @@ public Plugin myinfo =
 	name = "SM Valve Gloves",
 	author = "Franc1sco franug and hadesownage",
 	description = "",
-	version = "1.4.4",
+	version = "1.5",
 	url = "http://steamcommunity.com/id/franug"
 };
 
@@ -194,6 +195,7 @@ public void ValveGlovesMenu ( int client ) {
 	if(g_iGlove [ client ] < 1) AddMenuItem(menu, "default", "Default Gloves", ITEMDRAW_DISABLED);
 	else AddMenuItem(menu, "default", "Default Gloves");
 	
+	AddMenuItem(menu, "Hydra", "★ Hydra Gloves");
 	AddMenuItem(menu, "Bloodhound", "★ Bloodhound Gloves");
 	AddMenuItem(menu, "Driver", "☆ Driver Gloves");
 	AddMenuItem(menu, "Hand", "★ Hand Wraps");
@@ -201,7 +203,7 @@ public void ValveGlovesMenu ( int client ) {
 	AddMenuItem(menu, "Specialist", "★ Specialist Gloves");
 	AddMenuItem(menu, "Sport", "☆ Sport Gloves");
 	AddMenuItem(menu, "Quality", "✦ Quality");
-	SetMenuPagination(menu, 	MENU_NO_PAGINATION);
+	//SetMenuPagination(menu,MENU_NO_PAGINATION);
 	SetMenuExitButton(menu, true);
 	DisplayMenu(menu, client, MENU_TIME_FOREVER);
 }
@@ -229,7 +231,11 @@ public int ValveGlovesMenu_Handler(Handle menu, MenuAction action, int param1, i
 				CommandGloves(param1, 0);
 				
 			}
-			if (StrEqual(item, "Bloodhound"))
+			if (StrEqual(item, "Hydra"))
+			{
+				Hydra_Menu ( param1 );
+			}
+			else if (StrEqual(item, "Bloodhound"))
 			{
 				BloodHound_Menu ( param1 );
 			}
@@ -361,6 +367,107 @@ public Quality_Handler(Handle menu, MenuAction action, int param1, int param2)
 			SetUserGloves ( param1, g_iGlove [ param1 ], false );
 			
 			
+		}
+		case MenuAction_Cancel:
+		{
+			if(param2==MenuCancel_ExitBack)
+			{
+				ValveGlovesMenu(param1);
+			}
+		}
+		case MenuAction_End:
+		{
+			//param1 is MenuEnd reason, if canceled param2 is MenuCancel reason
+			CloseHandle(menu);
+
+		}
+
+	}
+}
+
+public void Hydra_Menu ( client ) {
+	
+	Handle menu = CreateMenu(Hydra_Handler, MenuAction_Select | MenuAction_End);
+	SetMenuTitle(menu, "★ Hydra Gloves ★");
+	
+	if ( g_iGlove [ client ] == 25 )
+		AddMenuItem(menu, "25", "Emerald", ITEMDRAW_DISABLED);
+	else
+		AddMenuItem(menu, "25", "Emerald");
+		
+	if ( g_iGlove [ client ] == 26 )
+		AddMenuItem(menu, "26", "Mangrove", ITEMDRAW_DISABLED);
+	else
+		AddMenuItem(menu, "26", "Mangrove");
+		
+	if ( g_iGlove [ client ] == 27 )
+		AddMenuItem(menu, "27", "Rattler", ITEMDRAW_DISABLED);
+	else
+		AddMenuItem(menu, "27", "Rattler");
+	
+	if ( g_iGlove [ client ] == 28 )
+		AddMenuItem(menu, "28", "Case Hardened", ITEMDRAW_DISABLED);
+	else
+		AddMenuItem(menu, "28", "Case Hardened");
+		
+	if ( g_iGlove [ client ] == 29 )
+		AddMenuItem(menu, "29", "Charred", ITEMDRAW_DISABLED);
+	else
+		AddMenuItem(menu, "29", "Charred");
+		
+	if ( g_iGlove [ client ] == 30 )
+		AddMenuItem(menu, "30", "Snakebite", ITEMDRAW_DISABLED);
+	else
+		AddMenuItem(menu, "30", "Snakebite");
+	
+	if ( g_iGlove [ client ] == 31 )
+		AddMenuItem(menu, "31", "Bronzed", ITEMDRAW_DISABLED);
+	else
+		AddMenuItem(menu, "31", "Bronzed");
+		
+	if ( g_iGlove [ client ] == 32 )
+		AddMenuItem(menu, "32", "Guerrilla", ITEMDRAW_DISABLED);
+	else
+		AddMenuItem(menu, "32", "Guerrilla");
+		
+	SetMenuExitBackButton(menu, true);
+	DisplayMenu(menu, client, MENU_TIME_FOREVER);
+				
+}
+
+public Hydra_Handler(Handle menu, MenuAction action, int param1, int param2)
+{
+	switch (action)
+	{
+		case MenuAction_Select:
+		{
+			//param1 is client, param2 is item
+
+			char item[64];
+			GetMenuItem(menu, param2, item, sizeof(item));
+			int num = StringToInt(item);
+			char model[64];
+			
+			switch(num)
+			{
+				case 25:strcopy(model, 64, "Emerald");
+				case 26:strcopy(model, 64, "Mangrove");
+				case 27:strcopy(model, 64, "Rattler");
+				case 28:strcopy(model, 64, "Case Hardened");
+				case 29:strcopy(model, 64, "Charred");
+				case 30:strcopy(model, 64, "Snakebite");
+				case 31:strcopy(model, 64, "Bronzed");
+				case 32:strcopy(model, 64, "Guerrilla");
+				
+			}
+
+			SetUserGloves ( param1, num, true );
+				
+			if ( !GetConVarInt ( g_cvCloseMenu ) )
+				Hydra_Menu ( param1 );
+				
+			
+			PrintToChat ( param1, "%s Your new glove is \x04Hydra | %s", PREFIX , model);
 		}
 		case MenuAction_Cancel:
 		{
@@ -1134,6 +1241,60 @@ stock void SetUserGloves (int client, int glove, bool bSave, bool onSpawn = fals
 		        		
 		        		type = SPORT;
 		        		skin = 10018;
+	
+		        	}
+		        	
+		        	case 25: {
+		        		
+		        		type = HYDRA;
+		        		skin = 10057;
+	
+		        	}
+		        	case 26: {
+		        		
+		        		type = HYDRA;
+		        		skin = 10058;
+	
+		        	}
+		        	
+		        	case 27: {
+		        		
+		        		type = HYDRA;
+		        		skin = 10059;
+	
+		        	}
+		        	
+		        	case 28: {
+		        		
+		        		type = HYDRA;
+		        		skin = 10060;
+	
+		        	}
+		        	
+		        	case 29: {
+		        		
+		        		type = HYDRA;
+		        		skin = 10006;
+	
+		        	}
+		        	case 30: {
+		        		
+		        		type = HYDRA;
+		        		skin = 10007;
+	
+		        	}
+		        	
+		        	case 31: {
+		        		
+		        		type = HYDRA;
+		        		skin = 10008;
+	
+		        	}
+		        	
+		        	case 32: {
+		        		
+		        		type = HYDRA;
+		        		skin = 10039;
 	
 		        	}
 		        	
