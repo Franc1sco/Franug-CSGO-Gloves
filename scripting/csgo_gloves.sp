@@ -57,7 +57,7 @@ public Plugin myinfo =
 	name = "SM Valve Gloves",
 	author = "Franc1sco franug and hadesownage",
 	description = "",
-	version = "2.1.2",
+	version = "2.1.3",
 	url = "http://steamcommunity.com/id/franug"
 };
 
@@ -120,14 +120,11 @@ public void RefreshKV()
 	int skin;
 	int langCount = GetLanguageCount();
 	char flags[32];
-	
+	int files = 0;
 	for (int i = 0; i < langCount; i++)
 	{	
 		if (g_RandomSkins[i] != null)CloseHandle(g_RandomSkins[i]);
 		if (g_RandomGloves[i] != null)CloseHandle(g_RandomGloves[i]);
-		
-		g_RandomSkins[i] = CreateArray();
-		g_RandomGloves[i] = CreateArray();
 		
 		GetLanguageInfo(i, code, sizeof(code), language, sizeof(language)); 
 		
@@ -144,6 +141,9 @@ public void RefreshKV()
 			CloseHandle(kv);
 		}
 		
+		g_RandomSkins[i] = CreateArray();
+		g_RandomGloves[i] = CreateArray();
+		files++;
 		count = 0;
 		
 		menuGloves[i][0] = new Menu(MainMenu_Handler);
@@ -195,6 +195,11 @@ public void RefreshKV()
 		KvRewind(kv);
 		
 		CloseHandle(kv);
+	}
+	
+	if(files == 0)
+	{
+		SetFailState("No CFG Files found.");
 	}
 }
 
