@@ -20,8 +20,9 @@
 #include <cstrike>
 #include <clientprefs>
 #include <autoexecconfig>
+#include <multicolors>
 
-#define		PREFIX			"\x01★ \x04[Gloves]\x01"
+#define		PREFIX			"★ {green}[Gloves]{default}"
 
 #define CTARMS "models/weapons/ct_arms.mdl"
 #define TTARMS "models/weapons/t_arms.mdl"
@@ -47,18 +48,21 @@ Handle cvar_thirdperson;
 
 Menu menuGloves[MAX_LANG][24];
 
+Handle g_RandomSkins[MAX_LANG];
+Handle g_RandomGloves[MAX_LANG];
+
 public Plugin myinfo =
 {
 	name = "SM Valve Gloves",
 	author = "Franc1sco franug and hadesownage",
 	description = "",
-	version = "2.0",
+	version = "2.1",
 	url = "http://steamcommunity.com/id/franug"
 };
 
 public void OnPluginStart() {
 
-	
+	LoadTranslations("csgo_gloves.phrases");
 	RegConsoleCmd ( "sm_gl", CommandGloves );
 	RegConsoleCmd ( "sm_gls", CommandGloves );
     	
@@ -88,6 +92,8 @@ public void OnPluginStart() {
 	
 	g_pSaveQ = RegClientCookie ( "ValveGlovesQ", "Store Valve gloves quality", CookieAccess_Private );
 
+	RefreshKV();
+	
 	for ( int client = 1; client <= MaxClients; client++ )
 		if ( IsValidClient ( client ) )
 		{
@@ -98,8 +104,6 @@ public void OnPluginStart() {
 	AutoExecConfig_ExecuteFile();
 	
 	AutoExecConfig_CleanFile();
-
-	RefreshKV();
 }
 
 public void RefreshKV()
@@ -111,11 +115,19 @@ public void RefreshKV()
 	char temp2[64];
 	int iTemp;
 	Handle kv;
-	
+	int count;
+	int skin;
 	int langCount = GetLanguageCount();
+	char flags[32];
 	
 	for (int i = 0; i < langCount; i++)
 	{	
+		if (g_RandomSkins[i] != null)CloseHandle(g_RandomSkins[i]);
+		if (g_RandomGloves[i] != null)CloseHandle(g_RandomGloves[i]);
+		
+		g_RandomSkins[i] = CreateArray();
+		g_RandomGloves[i] = CreateArray();
+		
 		GetLanguageInfo(i, code, sizeof(code), language, sizeof(language)); 
 		
 		BuildPath(Path_SM, sConfig, PLATFORM_MAX_PATH, "configs/franug_gloves/gloves_%s.cfg", language);
@@ -131,14 +143,19 @@ public void RefreshKV()
 			CloseHandle(kv);
 		}
 		
-		int count = 0;
+		count = 0;
 		
 		menuGloves[i][0] = new Menu(MainMenu_Handler);
-		SetMenuTitle(menuGloves[i][0], "Gloves Main menu");
+		SetMenuTitle(menuGloves[i][0], "%T", "Gloves Main menu", LANG_SERVER);
+
 		SetMenuExitBackButton(menuGloves[i][0], true);
 		
-		AddMenuItem(menuGloves[i][0], "default", "Default gloves");
-		AddMenuItem(menuGloves[i][0], "Quality", "Quality gloves");
+		Format(temp, 64, "%T", "Default gloves", LANG_SERVER);
+		AddMenuItem(menuGloves[i][0], "default", temp);
+		Format(temp, 64, "%T", "Set Quality on gloves", LANG_SERVER);
+		AddMenuItem(menuGloves[i][0], "Quality", temp);
+		Format(temp, 64, "%T", "Random gloves", LANG_SERVER);
+		AddMenuItem(menuGloves[i][0], "random", temp);
 		
 		do
 		{
@@ -162,10 +179,17 @@ public void RefreshKV()
 			{
 				
 				KvGetSectionName(kv, temp, 64);
-
-				IntToString(KvGetNum(kv, "index"), temp2, 64);
-				Format(temp2, 64, "%i;%i", iTemp, KvGetNum(kv, "index"));
+				skin = KvGetNum(kv, "index");
+				KvGetString(kv, "flags", flags, 32, "0");
+				Format(temp2, 64, "%i;%i;%s", iTemp, skin, flags);
+				
+				if(!StrEqual(flags, "0", false))
+					Format(temp, 64, "%s %T", temp, "(VIP ACCESS)", LANG_SERVER);
+				
 				AddMenuItem(menuGloves[i][count], temp2, temp);
+				
+				PushArrayCell(g_RandomSkins[i], skin);
+				PushArrayCell(g_RandomGloves[i], iTemp);
 				
 			}while (KvGotoNextKey(kv));
 			
@@ -257,8 +281,8 @@ public Action CommandGloves ( int client, int args ) {
 	if ( GetConVarInt ( g_cvVipOnly ) ) {
 		
 		if ( !IsUserVip ( client ) ) {
-			
-			PrintToChat ( client, "%s This command is only for \x04VIPs\x01", PREFIX );
+
+			CPrintToChat ( client, "%s %T", PREFIX, "This command is only for VIPs", client);
 			return Plugin_Handled;
 		}
 	}
@@ -270,7 +294,8 @@ public Action CommandGloves ( int client, int args ) {
 }
 
 public void ValveGlovesMenu ( int client ) 
-{
+{	
+	SetMenuTitle(menuGloves[clientlang[client]][0], "%T", "Gloves Main menu", client);
 	DisplayMenu(menuGloves[clientlang[client]][0], client, MENU_TIME_FOREVER);
 }
 
@@ -292,15 +317,29 @@ public int MainMenu_Handler(Handle menu, MenuAction action, int param1, int para
 				IntToString ( g_iGlove [ param1 ], Data, sizeof ( Data ) );
 				SetClientCookie ( param1, g_pSave, Data );
 			
-				PrintToChat ( param1, "%s You have default gloves now.", PREFIX );
+				CPrintToChat ( param1, "%s %T", PREFIX, "You have default gloves now", param1 );
 				SetUserGloves(param1, 0, 0,  false);
-				CommandGloves(param1, 0);
+				if ( !GetConVarInt ( g_cvCloseMenu ) )
+					CommandGloves(param1, 0);
 				
 				
 			}
 			else if (StrEqual(item, "Quality"))
 			{
 				Quality_Menu ( param1 );
+			}
+			else if (StrEqual(item, "random"))
+			{
+				g_iGlove [ param1 ] = -1;
+	        	
+				char Data [ 32 ];
+				IntToString ( g_iGlove [ param1 ], Data, sizeof ( Data ) );
+				SetClientCookie ( param1, g_pSave, Data );
+			
+				CPrintToChat ( param1, "%s %T", PREFIX, "You have random gloves now", param1 );
+				SetUserGloves(param1, -1, -1,  false);
+				if ( !GetConVarInt ( g_cvCloseMenu ) )
+					CommandGloves(param1, 0);
 			}
 			else
 			{
@@ -329,16 +368,25 @@ public int SubMenu_Handler(Handle menu, MenuAction action, int param1, int param
 
 			char item[64];
 			GetMenuItem(menu, param2, item, sizeof(item));
-			char temp[2][6];
+			char temp[3][32];
 			
-			ExplodeString(item, ";", temp, 2, 6);
+			ExplodeString(item, ";", temp, 3, 32);
+			
+			if (!CheckAdminFlagsByString(param1, temp[2]))
+			{
+				CPrintToChat ( param1, "%s %T", PREFIX, "This command is only for VIPs", param1);
+				if ( !GetConVarInt ( g_cvCloseMenu ) )
+					CommandGloves(param1, 0);
+					
+					
+				return;
+			}
 			
 			g_iSkin[param1] = StringToInt(temp[1]);
 			g_iGlove[param1] = StringToInt(temp[0]);
 			
 			
-			
-			PrintToChat(param1, "%s You selected a new glove", PREFIX);
+			CPrintToChat(param1, "%s %T", PREFIX, "You have a new glove", param1);
 			
 			SetUserGloves(param1, g_iGlove[param1],g_iSkin[param1], true);	
 			
@@ -357,30 +405,49 @@ public int SubMenu_Handler(Handle menu, MenuAction action, int param1, int param
 	}
 }
 
+stock bool CheckAdminFlagsByString(int client, const char[] flagString)
+{
+    AdminId admin = view_as<AdminId>(GetUserAdmin(client));
+    if (admin != INVALID_ADMIN_ID){
+        int count, found, flags = ReadFlagString(flagString);
+        for (int i = 0; i <= 20; i++){
+            if (flags & (1<<i))
+            {
+                count++;
+
+                if(GetAdminFlag(admin, view_as<AdminFlag>(i))){
+                    found++;
+                }
+            }
+        }
+
+        if (count == found || GetUserFlagBits(client) & ADMFLAG_ROOT){
+            return true;
+        }
+    }
+
+    return false;
+}  
+
 public void Quality_Menu ( client ) {
 	
 	Handle menu = CreateMenu(Quality_Handler, MenuAction_Select | MenuAction_End);
-	SetMenuTitle(menu, "✦ Quality Menu ✦");
+	SetMenuTitle(menu, "%T", "Quality Menu",client);
 	
-	if ( g_fUserQuality [ client ] == 0.0 )
-		AddMenuItem(menu, "FactoryNew", "Factory New", ITEMDRAW_DISABLED);
-	else
-		AddMenuItem(menu, "FactoryNew", "Factory New");
+	char temp[64];
+	Format(temp, 64, "%T", "Factory New", client);
+	AddMenuItem(menu, "FactoryNew", temp, g_fUserQuality [ client ] == 0.0?ITEMDRAW_DISABLED:ITEMDRAW_DEFAULT);
 		
-	if ( g_fUserQuality [ client ] == 0.25 )
-		AddMenuItem(menu, "MinimalWear", "Minimal Wear", ITEMDRAW_DISABLED);
-	else
-		AddMenuItem(menu, "MinimalWear", "Minimal Wear");
 		
-	if ( g_fUserQuality [ client ] == 0.50 )
-		AddMenuItem(menu, "FieldTested", "Field-Tested", ITEMDRAW_DISABLED);
-	else
-		AddMenuItem(menu, "FieldTested", "Field-Tested");
+	Format(temp, 64, "%T", "Minimal Wear", client);
+	AddMenuItem(menu, "MinimalWear", temp, g_fUserQuality [ client ] == 0.25?ITEMDRAW_DISABLED:ITEMDRAW_DEFAULT);
 	
-	if ( g_fUserQuality [ client ] == 1.0 )
-		AddMenuItem(menu, "BattleScared", "Battle-Scarred", ITEMDRAW_DISABLED);
-	else
-		AddMenuItem(menu, "BattleScared", "Battle-Scarred");	
+	Format(temp, 64, "%T", "Field-Tested", client);
+	AddMenuItem(menu, "FieldTested", temp, g_fUserQuality [ client ] == 0.50?ITEMDRAW_DISABLED:ITEMDRAW_DEFAULT);
+	
+	
+	Format(temp, 64, "%T", "Battle-Scarred", client);
+	AddMenuItem(menu, "BattleScared", temp, g_fUserQuality [ client ] == 1.0?ITEMDRAW_DISABLED:ITEMDRAW_DEFAULT);
 		
 	SetMenuExitBackButton(menu, true);
 	DisplayMenu(menu, client, MENU_TIME_FOREVER);
@@ -405,7 +472,7 @@ public Quality_Handler(Handle menu, MenuAction action, int param1, int param2)
 				if ( !GetConVarInt ( g_cvCloseMenu ) )
 					Quality_Menu ( param1 );
 				
-				PrintToChat ( param1, "%s Your new \x06Glove Quality\x01 is \x07Factory New\x01.", PREFIX );
+				CPrintToChat ( param1, "%s %T", PREFIX , "Your new Glove Quality is Factory New", param1);
 			}
 			else if (StrEqual(item, "MinimalWear"))
 			{
@@ -414,7 +481,7 @@ public Quality_Handler(Handle menu, MenuAction action, int param1, int param2)
 				if ( !GetConVarInt ( g_cvCloseMenu ) )
 					Quality_Menu ( param1 );
 				
-				PrintToChat ( param1, "%s Your new \x06Glove Quality\x01 is \x07Minimal Wear\x01.", PREFIX );
+				CPrintToChat ( param1, "%s %T", PREFIX , "Your new Glove Quality is Minimal Wear", param1);
 			}
 			else if (StrEqual(item, "FieldTested"))
 			{
@@ -423,7 +490,7 @@ public Quality_Handler(Handle menu, MenuAction action, int param1, int param2)
 				if ( !GetConVarInt ( g_cvCloseMenu ) )
 					Quality_Menu ( param1 );
 				
-				PrintToChat ( param1, "%s Your new \x06Glove Quality\x01 is \x07Field-Tested\x01.", PREFIX );
+				CPrintToChat ( param1, "%s %T", PREFIX , "Your new Glove Quality is Field-Tested", param1);
 			}
 			else if (StrEqual(item, "BattleScared"))
 			{
@@ -432,7 +499,7 @@ public Quality_Handler(Handle menu, MenuAction action, int param1, int param2)
 				if ( !GetConVarInt ( g_cvCloseMenu ) )
 					Quality_Menu ( param1 );
 				
-				PrintToChat ( param1, "%s Your new \x06Glove Quality\x01 is \x07Battle-Scarred\x01.", PREFIX );
+				CPrintToChat ( param1, "%s %T", PREFIX , "Your new Glove Quality is Battle-Scarred", param1);
 			}
 			
 			char Data [ 32 ];
@@ -469,7 +536,7 @@ stock void SetUserGloves (int client, int glove = -1, int skin = -1, bool bSave 
 		gloves[client] = -1;
 		if ( IsPlayerAlive ( client ) ) 
 		{
-			if(glove > 0) 
+			if(glove != 0) 
 			{
 				if(!onSpawn)
 				{
@@ -495,6 +562,14 @@ stock void SetUserGloves (int client, int glove = -1, int skin = -1, bool bSave 
 				ent = CreateEntityByName("wearable_item");
 				if(ent != -1)
 				{
+					if(glove == -1)
+					{
+						int random = GetRandomInt(0, GetArraySize(g_RandomGloves[clientlang[client]])-1);
+						
+						glove = GetArrayCell(g_RandomGloves[clientlang[client]], random);
+						skin = GetArrayCell(g_RandomSkins[clientlang[client]], random);
+					}
+						
 					SetEntProp(ent, Prop_Send, "m_iItemIDLow", -1);
 					SetEntProp(ent, Prop_Send, "m_iItemDefinitionIndex", glove);
 					SetEntProp(ent, Prop_Send, "m_nFallbackPaintKit", skin);

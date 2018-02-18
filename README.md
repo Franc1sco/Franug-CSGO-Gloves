@@ -52,14 +52,6 @@ sm_csgogloves_cksurffix "0"
 sm_csgogloves_delaySpawn "0"
 ```
 
-## TODO LIST
-
-```
--Add gloves per team.
--Add flag support for each skin.
--Add random glove option.
-```
-
 
 ## Follow the rules here: https://github.com/Franc1sco/Franug-PRIVATE-PLUGINS
 ## Dont forget to give me +rep in my steam profile ( http://steamcommunity.com/id/franug ) if you like my plugins :)
