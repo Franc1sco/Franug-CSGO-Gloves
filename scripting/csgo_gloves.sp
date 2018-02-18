@@ -56,7 +56,7 @@ public Plugin myinfo =
 	name = "SM Valve Gloves",
 	author = "Franc1sco franug and hadesownage",
 	description = "",
-	version = "2.1",
+	version = "2.1.1",
 	url = "http://steamcommunity.com/id/franug"
 };
 
@@ -372,7 +372,7 @@ public int SubMenu_Handler(Handle menu, MenuAction action, int param1, int param
 			
 			ExplodeString(item, ";", temp, 3, 32);
 			
-			if (!CheckAdminFlagsByString(param1, temp[2]))
+			if (!StrEqual(temp[2], "0", false) && !CheckAdminFlagsByString(param1, temp[2]))
 			{
 				CPrintToChat ( param1, "%s %T", PREFIX, "This command is only for VIPs", param1);
 				if ( !GetConVarInt ( g_cvCloseMenu ) )
