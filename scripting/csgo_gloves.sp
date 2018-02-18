@@ -57,7 +57,7 @@ public Plugin myinfo =
 	name = "SM Valve Gloves",
 	author = "Franc1sco franug and hadesownage",
 	description = "",
-	version = "2.1.3",
+	version = "2.1.4",
 	url = "http://steamcommunity.com/id/franug"
 };
 
@@ -296,6 +296,10 @@ public Action CommandGloves ( int client, int args ) {
 
 public void ValveGlovesMenu ( int client ) 
 {	
+	
+	if (menuGloves[clientlang[client]][0] == null) clientlang[client] = GetLanguageByName("english");
+	
+	
 	if(!langmenus[clientlang[client]])
 	{
 		char temp[64];
