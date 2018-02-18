@@ -47,6 +47,7 @@ float g_fUserQuality [ MAXPLAYERS + 1 ];
 Handle cvar_thirdperson;
 
 Menu menuGloves[MAX_LANG][24];
+bool langmenus[MAX_LANG];
 
 Handle g_RandomSkins[MAX_LANG];
 Handle g_RandomGloves[MAX_LANG];
@@ -56,7 +57,7 @@ public Plugin myinfo =
 	name = "SM Valve Gloves",
 	author = "Franc1sco franug and hadesownage",
 	description = "",
-	version = "2.1.1",
+	version = "2.1.2",
 	url = "http://steamcommunity.com/id/franug"
 };
 
@@ -150,12 +151,7 @@ public void RefreshKV()
 
 		SetMenuExitBackButton(menuGloves[i][0], true);
 		
-		Format(temp, 64, "%T", "Default gloves", LANG_SERVER);
-		AddMenuItem(menuGloves[i][0], "default", temp);
-		Format(temp, 64, "%T", "Set Quality on gloves", LANG_SERVER);
-		AddMenuItem(menuGloves[i][0], "Quality", temp);
-		Format(temp, 64, "%T", "Random gloves", LANG_SERVER);
-		AddMenuItem(menuGloves[i][0], "random", temp);
+		langmenus[i] = false;
 		
 		do
 		{
@@ -295,7 +291,25 @@ public Action CommandGloves ( int client, int args ) {
 
 public void ValveGlovesMenu ( int client ) 
 {	
-	SetMenuTitle(menuGloves[clientlang[client]][0], "%T", "Gloves Main menu", client);
+	if(!langmenus[clientlang[client]])
+	{
+		char temp[64];
+		
+		Format(temp, 64, "%T", "Set Quality on gloves", client);
+		InsertMenuItem(menuGloves[clientlang[client]][0], 0,  "Quality", temp);
+		
+		Format(temp, 64, "%T", "Random gloves", client);
+		InsertMenuItem(menuGloves[clientlang[client]][0], 0,  "random", temp);
+		
+		Format(temp, 64, "%T", "Default gloves", client);
+		InsertMenuItem(menuGloves[clientlang[client]][0], 0,  "default", temp);
+		
+		SetMenuTitle(menuGloves[clientlang[client]][0], "%T", "Gloves Main menu", client);
+		
+		langmenus[clientlang[client]] = true;
+		
+	}
+	
 	DisplayMenu(menuGloves[clientlang[client]][0], client, MENU_TIME_FOREVER);
 }
 
