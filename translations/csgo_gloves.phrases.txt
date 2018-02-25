@@ -7,7 +7,7 @@
 	}
 	"Set Quality on gloves"
 	{
-		"en"			"Set Quality on gloves"
+		"en"			"Set Quality of gloves"
 		"es"			"Fijar calidad en los guantes"
 	}
 	"Random gloves"
@@ -32,7 +32,7 @@
 	}
 	"You have default gloves now"
 	{
-		"en"	"You have default gloves now"
+		"en"	"Default Gloves selected"
 		"es"	"Ahora tienes guantes por defecto"
 	}
 	"You have random gloves now"
@@ -43,7 +43,7 @@
 	
 	"You have a new glove"
 	{
-		"en"	"You have a new glove"
+		"en"	"New Gloves selected"
 		"es"	"Ahora tienes unos guantes nuevos"
 	}
 	
