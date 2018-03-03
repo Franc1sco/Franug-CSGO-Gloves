@@ -67,15 +67,15 @@
 		"en"	"Field-Tested"
 		"es"	"Probado en el campo"
 	}
+	"Well-worn"
+	{
+		"en"	"Well-worn"
+		"es"	"Bien usado"
+	}
 	"Battle-Scarred"
 	{
 		"en"	"Battle-Scarred"
 		"es"	"Batalla con cicatrices"
-	}
-	"Your new Glove Quality is Battle-Scarred"
-	{
-		"en"	"Your new {lime}Glove Quality{default} is {lightred}Battle-Scarred"
-		"es"	"Tu nueva {lime}Calidad del guante{default} es {lightred}Batalla con cicatrices"
 	}
 	"Your new Glove Quality is Factory New"
 	{
@@ -91,6 +91,11 @@
 	{
 		"en"	"Your new {lime}Glove Quality{default} is {lightred}Field-Tested"
 		"es"	"Tu nueva {lime}Calidad del guante{default} es {lightred}probado en el campo"
+	}
+	"Your new Glove Quality is Well-worn"
+	{
+		"en"	"Your new {lime}Glove Quality{default} is {lightred}Well-worn"
+		"es"	"Tu nueva {lime}Calidad del guante{default} es {lightred}Bien usado"
 	}
 	"Your new Glove Quality is Battle-Scarred"
 	{

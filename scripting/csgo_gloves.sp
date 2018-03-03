@@ -57,7 +57,7 @@ public Plugin myinfo =
 	name = "SM Valve Gloves",
 	author = "Franc1sco franug and hadesownage",
 	description = "",
-	version = "2.1.4",
+	version = "2.1.5",
 	url = "http://steamcommunity.com/id/franug"
 };
 
@@ -468,6 +468,8 @@ public void Quality_Menu ( client ) {
 	Format(temp, 64, "%T", "Field-Tested", client);
 	AddMenuItem(menu, "FieldTested", temp, g_fUserQuality [ client ] == 0.50?ITEMDRAW_DISABLED:ITEMDRAW_DEFAULT);
 	
+	Format(temp, 64, "%T", "Well-worn", client);
+	AddMenuItem(menu, "Well-worn", temp, g_fUserQuality [ client ] == 0.75?ITEMDRAW_DISABLED:ITEMDRAW_DEFAULT);
 	
 	Format(temp, 64, "%T", "Battle-Scarred", client);
 	AddMenuItem(menu, "BattleScared", temp, g_fUserQuality [ client ] == 1.0?ITEMDRAW_DISABLED:ITEMDRAW_DEFAULT);
@@ -514,6 +516,15 @@ public Quality_Handler(Handle menu, MenuAction action, int param1, int param2)
 					Quality_Menu ( param1 );
 				
 				CPrintToChat ( param1, "%s %T", PREFIX , "Your new Glove Quality is Field-Tested", param1);
+			}
+			else if (StrEqual(item, "Well-worn"))
+			{
+				g_fUserQuality [ param1 ] = 0.75;
+				
+				if ( !GetConVarInt ( g_cvCloseMenu ) )
+					Quality_Menu ( param1 );
+				
+				CPrintToChat ( param1, "%s %T", PREFIX , "Your new Glove Quality is Well-worn", param1);
 			}
 			else if (StrEqual(item, "BattleScared"))
 			{
