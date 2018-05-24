@@ -21,6 +21,8 @@
 #include <clientprefs>
 #include <autoexecconfig>
 #include <multicolors>
+#undef REQUIRE_PLUGIN
+#include <custom_gloves>
 
 #define		PREFIX			"★ {green}[Gloves]{default}"
 
@@ -52,14 +54,63 @@ bool langmenus[MAX_LANG];
 Handle g_RandomSkins[MAX_LANG];
 Handle g_RandomGloves[MAX_LANG];
 
+bool custom_gloves;
+
 public Plugin myinfo =
 {
 	name = "SM Valve Gloves",
 	author = "Franc1sco franug and hadesownage",
 	description = "",
-	version = "2.1.5",
+	version = "3.0",
 	url = "http://steamcommunity.com/id/franug"
 };
+
+public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
+{
+	MarkNativeAsOptional("Custom_RemoveGloves");
+	
+	RegPluginLibrary("csgo_gloves");
+	
+	CreateNative("CSGO_RemoveGloves", Native_CSGO_SetGloves);
+	return APLRes_Success;
+}
+
+public void OnAllPluginsLoaded()
+{
+	custom_gloves = LibraryExists("custom_gloves");
+}
+ 
+public void OnLibraryRemoved(const char[] name)
+{
+	if (StrEqual(name, "custom_gloves"))
+	{
+		custom_gloves = false;
+	}
+}
+ 
+public void OnLibraryAdded(const char[] name)
+{
+	if (StrEqual(name, "custom_gloves"))
+	{
+		custom_gloves = true;
+	}
+}
+
+public Native_CSGO_SetGloves(Handle:plugin, numParams)
+{
+	int client = GetNativeCell(1);
+	
+	g_iGlove [ client ] = 0;
+	
+	if (!IsPlayerAlive(client))return;
+	
+	int ent = GetEntPropEnt(client, Prop_Send, "m_hMyWearables");
+	if(ent != -1)
+	{
+		AcceptEntityInput(ent, "KillHierarchy");
+	}
+	SetEntPropString(client, Prop_Send, "m_szArmsModel", "");
+}
 
 public void OnPluginStart() {
 
@@ -288,10 +339,58 @@ public Action CommandGloves ( int client, int args ) {
 		}
 	}
 	clientlang[client] = GetClientLanguage(client);
+	
+	
+	if(custom_gloves)
+	{
+		ValveGlovesMenu2(client);
+		
+		return Plugin_Handled;
+	}
 	ValveGlovesMenu ( client );
 
 	return Plugin_Handled;
 	
+}
+
+public void ValveGlovesMenu2 ( int client ) 
+{	
+	
+	Menu tmenu = new Menu(Menu_HandlerF);
+	SetMenuTitle(tmenu, "Select gloves");
+	
+	AddMenuItem(tmenu, "custom", "Custom Gloves");
+	AddMenuItem(tmenu, "valve", "Valve Gloves");
+	
+	
+	DisplayMenu(tmenu, client, 0);
+}
+
+public int Menu_HandlerF(Handle menu, MenuAction action, int param1, int param2)
+{
+	switch (action)
+	{
+		case MenuAction_Select:
+		{
+			//param1 is client, param2 is item
+
+			char item[64];
+			GetMenuItem(menu, param2, item, sizeof(item));
+			if (StrEqual(item, "custom"))
+			{
+				FakeClientCommand(param1, "sm_carms");
+			}
+			else if (StrEqual(item, "valve"))
+			{
+				ValveGlovesMenu(param1);
+			}
+		}
+		case MenuAction_End:
+		{
+			delete menu;
+		}
+
+	}
 }
 
 public void ValveGlovesMenu ( int client ) 
