@@ -35,7 +35,7 @@ Handle g_pSave;
 Handle g_pSaveSkin;
 Handle g_pSaveQ;
 
-ConVar g_cvVipOnly, g_cvVipFlags, g_cvCloseMenu;
+ConVar g_cvVipOnly, g_cvVipFlags, g_cvCloseMenu, g_cvDefaultGloves;
 
 int g_iGlove [ MAXPLAYERS + 1 ];
 int gloves [ MAXPLAYERS + 1 ];
@@ -61,7 +61,7 @@ public Plugin myinfo =
 	name = "SM Valve Gloves",
 	author = "Franc1sco franug and hadesownage",
 	description = "",
-	version = "3.0",
+	version = "3.0.1",
 	url = "http://steamcommunity.com/id/franug"
 };
 
@@ -136,6 +136,7 @@ public void OnPluginStart() {
 	g_cvVipOnly = AutoExecConfig_CreateConVar ( "sm_csgogloves_viponly", "0", "Set gloves only for VIPs", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
 	g_cvVipFlags = AutoExecConfig_CreateConVar ( "sm_csgogloves_vipflags", "t", "Set gloves only for VIPs", FCVAR_NOTIFY );
 	g_cvCloseMenu = AutoExecConfig_CreateConVar ( "sm_csgogloves_closemenu", "0", "Close menu after selection", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
+	g_cvDefaultGloves = AutoExecConfig_CreateConVar ( "sm_csgogloves_fixgloves", "1", "Prevent the bug of no arms in some maps", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
 	
 	cvar_thirdperson = AutoExecConfig_CreateConVar ( "sm_csgogloves_thirdperson", "1", "Enable thirdperson view for gloves", FCVAR_NOTIFY, true, 0.0, true, 1.0 );
 		
@@ -787,6 +788,9 @@ stock bool IsWearable(int ent) {
 
 stock NormalGloves(client)
 {
+	if(!g_cvDefaultGloves.BoolValue)
+		return;
+	
 	char temp[2];
 	GetEntPropString(client, Prop_Send, "m_szArmsModel", temp, sizeof(temp));
 	if(!temp[0] && GetEntPropEnt(client, Prop_Send, "m_hMyWearables") == -1)
