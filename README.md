@@ -52,7 +52,4 @@ sm_csgogloves_cksurffix "0"
 sm_csgogloves_delaySpawn "0"
 ```
 
-## Note: if you want to use custom gloves too, you need to buy the working custom gloves plugin compatible with this plugin from me (Franc1sco Franug).
-
-## Follow the rules here: https://github.com/Franc1sco/Franug-PRIVATE-PLUGINS
 ## Dont forget to give me +rep in my steam profile ( http://steamcommunity.com/id/franug ) if you like my plugins :)
