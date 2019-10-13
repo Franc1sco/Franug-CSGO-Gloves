@@ -23,6 +23,7 @@
 #include <multicolors>
 #undef REQUIRE_PLUGIN
 #include <custom_gloves>
+#include <fnemotes>
 
 #define		PREFIX			"★ {green}[Gloves]{default}"
 
@@ -55,19 +56,21 @@ Handle g_RandomSkins[MAX_LANG];
 Handle g_RandomGloves[MAX_LANG];
 
 bool custom_gloves;
+//bool emotes;
 
 public Plugin myinfo =
 {
 	name = "SM Valve Gloves",
 	author = "Franc1sco franug and hadesownage",
 	description = "",
-	version = "3.0.1",
+	version = "3.0.2",
 	url = "http://steamcommunity.com/id/franug"
 };
 
 public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 {
 	MarkNativeAsOptional("Custom_RemoveGloves");
+	MarkNativeAsOptional("fnemotes_IsClientEmoting");
 	
 	RegPluginLibrary("csgo_gloves");
 	
@@ -78,6 +81,8 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 public void OnAllPluginsLoaded()
 {
 	custom_gloves = LibraryExists("custom_gloves");
+	//emotes = LibraryExists("fnemotes");
+	
 }
  
 public void OnLibraryRemoved(const char[] name)
@@ -86,6 +91,11 @@ public void OnLibraryRemoved(const char[] name)
 	{
 		custom_gloves = false;
 	}
+	/*
+	else if (StrEqual(name, "fnemotes"))
+	{
+		emotes = false;
+	}*/
 }
  
 public void OnLibraryAdded(const char[] name)
@@ -94,6 +104,11 @@ public void OnLibraryAdded(const char[] name)
 	{
 		custom_gloves = true;
 	}
+	/*
+	else if (StrEqual(name, "fnemotes"))
+	{
+		emotes = true;
+	}*/
 }
 
 public Native_CSGO_SetGloves(Handle:plugin, numParams)
@@ -157,6 +172,11 @@ public void OnPluginStart() {
 	AutoExecConfig_ExecuteFile();
 	
 	AutoExecConfig_CleanFile();
+}
+
+public void fnemotes_OnEmote(int client)
+{
+	SetUserGloves(client, g_iGlove [ client ],g_iSkin [ client ], false);
 }
 
 public void RefreshKV()
