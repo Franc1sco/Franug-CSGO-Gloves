@@ -1,6 +1,6 @@
 /*  SM Valve Gloves
  *
- *  Copyright (C) 2017 Francisco 'Franc1sco' García, hadesownage
+ *  Copyright (C) 2017-2019 Francisco 'Franc1sco' García
  * 
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -61,7 +61,7 @@ bool custom_gloves;
 public Plugin myinfo =
 {
 	name = "SM Valve Gloves",
-	author = "Franc1sco franug and hadesownage",
+	author = "Franc1sco franug",
 	description = "",
 	version = "3.0.2",
 	url = "http://steamcommunity.com/id/franug"
