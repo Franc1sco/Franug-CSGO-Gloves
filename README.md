@@ -1,3 +1,6 @@
+Alliedmods Topic: https://forums.alliedmods.net/showthread.php?t=321357
+
+
 ## Commands for open the main menu:
 ```
 sm_glove
